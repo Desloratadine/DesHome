@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>塔罗牌占卜 - TAROT DIVINATION</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="data.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 头部 -->
+        <header>
+            <div class="header-decoration">* * * ~ + = + ~ * * *</div>
+            <div class="header-title">TAROT DIVINATION</div>
+            <div class="header-decoration">* * * ~ + = + ~ * * *</div>
+            <!-- <div class="header-subtitle">[ 塔 罗 牌 占 卜 ]</div> -->
+        </header>
+
+        <!-- 主体两栏布局 -->
+        <div class="main-layout">
+            <!-- 左侧面板 -->
+            <aside class="left-panel" aria-label="占卜设置">
+                <div class="field-group">
+                    <label class="field-label" for="drawCount">抽取牌数</label>
+                    <input
+                    type="number"
+                    id="drawCount"
+                    class="input-number"
+                    value="3"
+                    min="1"
+                    max="10"
+                    step="1"
+                    placeholder="1-10"
+                    aria-label="抽取牌数"
+                    >
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="question">占卜问题</label>
+                    <input
+                    type="text"
+                    id="question"
+                    class="input-text"
+                    placeholder="输入你想问的问题..."
+                    maxlength="200"
+                    aria-label="占卜问题"
+                    >
+                </div>
+
+                <button
+                type="button"
+                id="btnDraw"
+                class="btn btn-draw"
+                title="抽取塔罗牌"
+                aria-label="抽取塔罗牌"
+            >
+            [ 抽 取 ]
+        </button>
+
+        <button
+        type="button"
+        id="btnExport"
+        class="btn btn-export"
+        title="导出占卜记录为TXT文件"
+        aria-label="导出记录"
+    >
+    > 导出记录 TXT
+</button>
+</aside>
+
+<!-- 右侧面板 -->
+<section class="right-panel" id="rightPanel" aria-label="抽牌结果">
+    <!-- 默认等待状态 -->
+    <div class="waiting-state" id="waitingState">
+        <div class="waiting-border">
+            <span class="waiting-text">卡牌等待抽取</span>
+            <span class="blink-cursor">_</span>
+        </div>
+    </div>
+
+    <!-- 结果容器（初始隐藏） -->
+    <div class="results-container" id="resultsContainer" style="display: none;">
+        <!-- 动态填充 -->
+    </div>
+</section>
+</div>
+</div>
+
+<script>
+    (function() {
+
+        // 验证牌数：78张
+        // console.assert(tarotDeck.length === 78, '塔罗牌总数应为78张，当前: ' + tarotDeck.length);
+
+        // ==================== DOM元素 ====================
+        const drawCountInput = document.getElementById('drawCount');
+        const questionInput = document.getElementById('question');
+        const btnDraw = document.getElementById('btnDraw');
+        const btnExport = document.getElementById('btnExport');
+        const rightPanel = document.getElementById('rightPanel');
+        const waitingState = document.getElementById('waitingState');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        // ==================== 当前抽取结果 ====================
+        let currentDrawResult = null; // { cards: [], question: '', drawCount: 0, timestamp: '' }
+
+        // ==================== 工具函数 ====================
+        /**
+         * Fisher-Yates 洗牌算法
+         */
+        function shuffleArray(arr) {
+            const shuffled = [...arr];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        /**
+         * 从牌组中随机抽取指定数量（不重复）
+         */
+        function drawCards(count) {
+            const shuffled = shuffleArray(tarotDeck);
+            const drawn = shuffled.slice(0, count);
+            // 为每张牌随机分配正逆位
+            return drawn.map(card => ({
+                ...card,
+                isReversed: Math.random() < 0.5, // 50%概率逆位
+            }));
+        }
+
+        /**
+         * 获取当前时间字符串
+         */
+        function getTimestamp() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        /**
+         * 获取大阿卡纳的罗马数字显示
+         */
+        function getCardNumberDisplay(card) {
+            if (card.type === 'major') {
+                return card.roman || String(card.number);
+            }
+            return String(card.number);
+        }
+
+        /**
+         * 获取卡牌的完整序号标签
+         */
+        function getCardFullNumberLabel(card) {
+            if (card.type === 'major') {
+                return `#${card.roman || card.number} (大阿卡纳)`;
+            }
+            return `#${card.number} (${card.suit})`;
+        }
+
+        // ==================== 渲染函数 ====================
+        function renderWaitingState() {
+            waitingState.style.display = 'block';
+            resultsContainer.style.display = 'none';
+            resultsContainer.innerHTML = '';
+            currentDrawResult = null;
+            rightPanel.style.justifyContent = 'center';
+            rightPanel.style.alignItems = 'center';
+        }
+
+        function renderResults(cards, question, drawCount, timestamp) {
+            waitingState.style.display = 'none';
+            resultsContainer.style.display = 'flex';
+            resultsContainer.innerHTML = '';
+            rightPanel.style.justifyContent = 'flex-start';
+            rightPanel.style.alignItems = 'center';
+
+            // 结果摘要
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'results-summary';
+            const questionDisplay = question.trim() || '(未提问)';
+            summaryDiv.textContent = `问题: ${questionDisplay} | 抽取: ${drawCount}张 | ${timestamp}`;
+            resultsContainer.appendChild(summaryDiv);
+
+            // 分隔线
+            const divider = document.createElement('div');
+            divider.className = 'divider-dots';
+            divider.textContent = '* * *';
+            divider.setAttribute('aria-hidden', 'true');
+            resultsContainer.appendChild(divider);
+
+            // 渲染每张牌
+            cards.forEach((card, index) => {
+                const cardItem = document.createElement('div');
+                cardItem.className = 'card-item';
+                if (card.isReversed) {
+                    cardItem.classList.add('reversed');
+                }
+
+                // 头部行：序号 + 位置
+                const headerRow = document.createElement('div');
+                headerRow.className = 'card-header-row';
+
+                const numberSpan = document.createElement('span');
+                numberSpan.className = 'card-number';
+                numberSpan.textContent = getCardFullNumberLabel(card);
+
+                const positionSpan = document.createElement('span');
+                positionSpan.className = 'card-position';
+                if (card.isReversed) {
+                    positionSpan.classList.add('reversed-pos');
+                    positionSpan.textContent = '[ 逆位 ]';
+                } else {
+                    positionSpan.textContent = '[ 正位 ]';
+                }
+
+                headerRow.appendChild(numberSpan);
+                headerRow.appendChild(positionSpan);
+                cardItem.appendChild(headerRow);
+
+                // 牌名
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'card-name';
+                nameDiv.textContent = card.name;
+                cardItem.appendChild(nameDiv);
+
+                // 牌图
+                const img = document.createElement('img');
+                img.className = 'card-image';
+                img.src = card.image;
+                img.alt = card.name + (card.isReversed ? ' (逆位)' : ' (正位)');
+                img.loading = 'lazy';
+                cardItem.appendChild(img);
+
+                // 详细信息
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'card-details';
+
+                // 元素
+                const elementItem = document.createElement('span');
+                elementItem.className = 'card-detail-item';
+                const elementLabel = document.createElement('span');
+                elementLabel.className = 'card-detail-label';
+                elementLabel.textContent = '元素:';
+                const elementValue = document.createElement('span');
+                elementValue.className = 'card-detail-value';
+                elementValue.textContent = card.element;
+                elementItem.appendChild(elementLabel);
+                elementItem.appendChild(elementValue);
+                detailsDiv.appendChild(elementItem);
+
+                // 系列（小阿卡纳显示）
+                if (card.type === 'minor') {
+                    const suitItem = document.createElement('span');
+                    suitItem.className = 'card-detail-item';
+                    const suitLabel = document.createElement('span');
+                    suitLabel.className = 'card-detail-label';
+                    suitLabel.textContent = '系列:';
+                    const suitBadge = document.createElement('span');
+                    suitBadge.className = 'card-suit-badge';
+                    suitBadge.textContent = card.suit;
+                    suitItem.appendChild(suitLabel);
+                    suitItem.appendChild(suitBadge);
+                    detailsDiv.appendChild(suitItem);
+                } else {
+                    // 大阿卡纳标记
+                    const majorItem = document.createElement('span');
+                    majorItem.className = 'card-detail-item';
+                    const majorBadge = document.createElement('span');
+                    majorBadge.className = 'card-suit-badge';
+                    majorBadge.textContent = '大阿卡纳';
+                    majorItem.appendChild(majorBadge);
+                    detailsDiv.appendChild(majorItem);
+                }
+
+                // 宫廷牌标记
+                if (card.court) {
+                    const courtItem = document.createElement('span');
+                    courtItem.className = 'card-detail-item';
+                    const courtBadge = document.createElement('span');
+                    courtBadge.className = 'card-suit-badge';
+                    courtBadge.textContent = '宫廷牌';
+                    courtItem.appendChild(courtBadge);
+                    detailsDiv.appendChild(courtItem);
+                }
+
+                cardItem.appendChild(detailsDiv);
+                resultsContainer.appendChild(cardItem);
+
+                // 牌之间的装饰分隔（除最后一张）
+                if (index < cards.length - 1) {
+                    const miniDivider = document.createElement('div');
+                    miniDivider.className = 'divider-dots';
+                    miniDivider.textContent = '- - -';
+                    miniDivider.setAttribute('aria-hidden', 'true');
+                    resultsContainer.appendChild(miniDivider);
+                }
+            });
+
+            // 底部装饰
+            const bottomDivider = document.createElement('div');
+            bottomDivider.className = 'divider-dots';
+            bottomDivider.textContent = '= = = = =';
+            bottomDivider.setAttribute('aria-hidden', 'true');
+            resultsContainer.appendChild(bottomDivider);
+
+            // 滚动到顶部
+            rightPanel.scrollTop = 0;
+        }
+
+        // ==================== 抽取逻辑 ====================
+        function handleDraw() {
+            // 获取并验证牌数
+            let drawCount = parseInt(drawCountInput.value, 10);
+
+            if (isNaN(drawCount) || drawCount < 1 || drawCount > 10) {
+                drawCount = 3;
+                drawCountInput.value = 3;
+                // 短暂闪烁提示
+                drawCountInput.style.background = '#000';
+                drawCountInput.style.color = '#fff';
+                setTimeout(() => {
+                    drawCountInput.style.background = '#fff';
+                    drawCountInput.style.color = '#000';
+                }, 150);
+            }
+
+            // 确保牌数不超过总牌数
+            if (drawCount > tarotDeck.length) {
+                drawCount = tarotDeck.length;
+                drawCountInput.value = drawCount;
+            }
+
+            const question = questionInput.value.trim();
+            const timestamp = getTimestamp();
+
+            // 抽取卡牌
+            const cards = drawCards(drawCount);
+
+            // 保存结果
+            currentDrawResult = {
+                cards: cards,
+                question: question,
+                drawCount: drawCount,
+                timestamp: timestamp,
+            };
+
+            // 渲染结果
+            renderResults(cards, question, drawCount, timestamp);
+
+            // 轻微的抽取音效反馈（视觉闪烁）
+            btnDraw.style.background = '#000';
+            btnDraw.style.color = '#fff';
+            setTimeout(() => {
+                btnDraw.style.background = '#fff';
+                btnDraw.style.color = '#000';
+            }, 120);
+        }
+
+        // ==================== 导出逻辑 ====================
+        function handleExport() {
+            if (!currentDrawResult || !currentDrawResult.cards || currentDrawResult.cards.length === 0) {
+                // 没有可导出的结果，提示用户先抽取
+                btnExport.style.background = '#000';
+                btnExport.style.color = '#fff';
+                btnExport.textContent = '> 请先抽取卡牌 <';
+                setTimeout(() => {
+                    btnExport.style.background = '#fff';
+                    btnExport.style.color = '#000';
+                    btnExport.textContent = '> 导出记录 TXT';
+                }, 1800);
+                return;
+            }
+
+            const { cards, question, drawCount, timestamp } = currentDrawResult;
+
+            // 构建TXT内容
+            const lines = [];
+            const sepLong = '+==================================+';
+            const sepShort = '+----------------------------------+';
+            const sepThin = '---';
+
+            lines.push(sepLong);
+            lines.push('|     塔罗牌占卜记录               |');
+            lines.push('|     TAROT DIVINATION LOG         |');
+            lines.push(sepLong);
+            lines.push('');
+            lines.push(`  时间: ${timestamp}`);
+            lines.push(`  问题: ${question || '(未提问)'}`);
+            lines.push(`  抽取牌数: ${drawCount}`);
+            lines.push('');
+            lines.push(sepLong);
+            lines.push('');
+
+            cards.forEach((card, index) => {
+                lines.push(`  [牌 ${index + 1}]`);
+                lines.push(`  名称: ${card.name}`);
+                if (card.type === 'major') {
+                    lines.push(`  序号: ${card.roman || card.number} (大阿卡纳)`);
+                } else {
+                    lines.push(`  序号: ${card.number}`);
+                    lines.push(`  系列: ${card.suit}`);
+                }
+                lines.push(`  元素: ${card.element}`);
+                lines.push(`  位置: ${card.isReversed ? '逆位 (Reversed)' : '正位 (Upright)'}`);
+                if (card.court) {
+                    lines.push(`  宫廷: ${card.court}`);
+                }
+                lines.push('');
+                if (index < cards.length - 1) {
+                    lines.push('  ' + sepThin);
+                    lines.push('');
+                }
+            });
+
+            lines.push(sepLong);
+            lines.push('  记录生成完毕');
+            lines.push(sepLong);
+            lines.push('');
+
+            const txtContent = lines.join('\n');
+
+            // 创建Blob并触发下载
+            const blob = new Blob([txtContent], { type: 'text/plain;charset=UTF-8' });
+            const url = URL.createObjectURL(blob);
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            // 文件名：tarot_log_YYYYMMDD_HHmmss.txt
+            const fileTimestamp = timestamp.replace(/[-:]/g, '').replace(/\s/g, '_');
+            downloadLink.download = `tarot_log_${fileTimestamp}.txt`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            // 释放URL
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 200);
+
+            // 导出成功反馈
+            btnExport.style.background = '#000';
+            btnExport.style.color = '#fff';
+            btnExport.textContent = '> 导出成功! <';
+            setTimeout(() => {
+                btnExport.style.background = '#fff';
+                btnExport.style.color = '#000';
+                btnExport.textContent = '> 导出记录 TXT';
+            }, 1500);
+        }
+
+        // ==================== 事件绑定 ====================
+        btnDraw.addEventListener('click', handleDraw);
+
+        btnExport.addEventListener('click', handleExport);
+
+        // 键盘快捷键：Enter键在输入框上触发抽取
+        questionInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleDraw();
+            }
+        });
+
+        drawCountInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleDraw();
+            }
+        });
+
+        // 数字输入框失焦时验证
+        drawCountInput.addEventListener('blur', function() {
+            let val = parseInt(drawCountInput.value, 10);
+            if (isNaN(val) || val < 1) {
+                drawCountInput.value = 1;
+            } else if (val > 10) {
+                drawCountInput.value = 10;
+            }
+        });
+
+        // 数字输入框获得焦点时全选
+        drawCountInput.addEventListener('focus', function() {
+            drawCountInput.select();
+        });
+
+        // ==================== 初始状态 ====================
+        renderWaitingState();
+
+        // ==================== 暴露数据供调试 ====================
+        console.log('塔罗牌组已加载，共 ' + tarotDeck.length + ' 张牌。');
+        console.log('大阿卡纳: ' + tarotDeck.filter(c => c.type === 'major').length + ' 张');
+        console.log('小阿卡纳: ' + tarotDeck.filter(c => c.type === 'minor').length + ' 张');
+        console.log('权杖(火): ' + tarotDeck.filter(c => c.suit === '权杖').length + ' 张');
+        console.log('圣杯(水): ' + tarotDeck.filter(c => c.suit === '圣杯').length + ' 张');
+        console.log('宝剑(风): ' + tarotDeck.filter(c => c.suit === '宝剑').length + ' 张');
+        console.log('星币(土): ' + tarotDeck.filter(c => c.suit === '星币').length + ' 张');
+        console.log('准备就绪，等待抽取。');
+
+    })();
+</script>
+</body>
+</html>

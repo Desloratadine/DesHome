@@ -4,7 +4,7 @@ window.GAME_CONFIG = {
     "totalLayers": 4,
     "backpackCapacity": 6,
     "flowersToLightBase": 3,
-    "maxLitTiles": 6,
+    "maxLitTiles": 3,
     "monsterInterval": 2,
     "initialFlowers": 6,
     "newTurfFlowersMinBase": 3,

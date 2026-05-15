@@ -6,7 +6,6 @@ window.GAME_CONFIG = {
     "flowersToLightBase": 3,
     "maxLitTiles": 6,
     "monsterInterval": 2,
-    "compassCost": 2,
     "initialFlowers": 6,
     "newTurfFlowersMinBase": 3,
     "newTurfFlowersMaxBase": 6,
@@ -19,5 +18,8 @@ window.GAME_CONFIG = {
         {"min": 4, "max": 7},
         {"min": 5, "max": 8},
         {"min": 6, "max": 9}
-    ]
+    ],
+    // 武器系统配置
+    "weaponUpgradeCosts": [0, 3, 4, 5],
+    "weaponDemandPercents": [0.5, 0.4, 0.3, 0.2, 0]
 };

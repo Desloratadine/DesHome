@@ -26,19 +26,26 @@
         <!-- Canvas游戏区域 -->
         <canvas id="gameCanvas"></canvas>
 
-        <!-- 背包 -->
+        <!-- 背包与武器 -->
         <div class="backpack-panel">
             <span class="backpack-label">🎒 背包</span>
             <div class="backpack-slots" id="backpackSlots"></div>
             <span class="backpack-count" id="backpackCount">0/6</span>
         </div>
+        <div class="weapon-panel" id="weaponPanel" style="display:none;">
+            <span class="weapon-label">🗡️ 武器 Lv.<span id="weaponLevel">0</span></span>
+            <button class="btn btn-weapon-upgrade" id="btnWeaponUpgrade">⬆ 升级</button>
+        </div>
 
-        <!-- 指南针按钮 -->
-        <div class="compass-panel">
-            <button class="btn btn-compass" id="btnCompass" title="使用指南针寻找阶梯/宝藏（消耗2朵花）">
-                🧭 使用指南针
-            </button>
-            <div class="compass-hint" id="compassHint"></div>
+        <!-- 指引者日志 -->
+        <div class="guide-log-panel">
+            <div class="guide-log-header">
+                <span class="guide-log-icon">📜</span>
+                <span class="guide-log-title">指引者提示</span>
+            </div>
+            <div class="guide-log-content" id="guideLogContent">
+                <div class="guide-log-empty">点亮指引者地块并支付花朵获取提示</div>
+            </div>
         </div>
 
         <!-- 提示 -->
@@ -47,14 +54,15 @@
 
     <!-- 怪物弹窗（隐藏） -->
     <div class="overlay" id="monsterOverlay" style="display:none;">
-            <div class="popup monster-popup">
+        <div class="popup monster-popup">
             <span class="popup-emoji">👾</span>
-            <h2>守关怪物出现了！</h2>
-            <p>贪婪的怪物索要你的花朵作为通行代价！<br>你可以选择支付或拒绝，但拒绝会带来后果...</p>
+            <h2 id="monsterTitle">守关怪物出现了！</h2>
+            <p id="monsterDesc">贪婪的怪物索要你的花朵作为通行代价！<br>你可以选择支付或拒绝，但拒绝会带来后果...</p>
             <p id="monsterStolenInfo" style="color:#e05555;font-weight:700;min-height:60px;"></p>
-            <div class="monster-buttons">
+            <div class="monster-buttons" id="monsterButtons">
                 <button class="btn btn-monster-pay" id="btnMonsterPay">支付代价</button>
                 <button class="btn btn-monster-refuse" id="btnMonsterRefuse">拒绝支付</button>
+                <button class="btn btn-monster-attack" id="btnMonsterAttack" style="display:none;">⚔️ 攻击怪物</button>
             </div>
         </div>
     </div>
@@ -86,10 +94,16 @@
             const winOverlay = document.getElementById('winOverlay');
             const btnMonsterPay = document.getElementById('btnMonsterPay');
             const btnMonsterRefuse = document.getElementById('btnMonsterRefuse');
+            const btnMonsterAttack = document.getElementById('btnMonsterAttack');
             const btnWinOk = document.getElementById('btnWinOk');
             const monsterStolenInfo = document.getElementById('monsterStolenInfo');
-            const btnCompass = document.getElementById('btnCompass');
-            const compassHint = document.getElementById('compassHint');
+            const monsterButtons = document.getElementById('monsterButtons');
+            // 武器UI
+            const weaponPanel = document.getElementById('weaponPanel');
+            const weaponLevelText = document.getElementById('weaponLevel');
+            const btnWeaponUpgrade = document.getElementById('btnWeaponUpgrade');
+            // 指引者日志DOM
+            const guideLogContent = document.getElementById('guideLogContent');
 
             // ==================== 游戏常量 ====================
             // 配置对象（默认值，将从config.js加载或使用默认值）
@@ -100,8 +114,7 @@
                 flowersToLightBase: 3,
                 maxLitTiles: 6,
                 monsterInterval: 2,
-                compassCost: 2,
-                initialFlowers: 5,
+                initialFlowers: 6,
                 newTurfFlowersMinBase: 3,
                 newTurfFlowersMaxBase: 6,
                 cellBaseSize: 80,
@@ -113,7 +126,10 @@
                     {min: 4, max: 7},
                     {min: 5, max: 8},
                     {min: 6, max: 9}
-                ]
+                ],
+                // 武器系统配置
+                weaponUpgradeCosts: [0, 5, 8, 12], // Lv0→1, Lv1→2, Lv2→3, Lv3→4
+                weaponDemandPercents: [0.5, 0.4, 0.3, 0.2, 0] // 索引=武器等级，守关索要比例
             };
 
             // ==================== 配置加载 ====================
@@ -132,12 +148,14 @@
             const FLOWERS_TO_LIGHT_BASE = CONFIG.flowersToLightBase;
             const MAX_LIT_TILES = CONFIG.maxLitTiles;
             const MONSTER_INTERVAL = CONFIG.monsterInterval;
-            const COMPASS_COST = CONFIG.compassCost;
             const INITIAL_FLOWERS = CONFIG.initialFlowers;
             const CELL_BASE_SIZE = CONFIG.cellBaseSize;
             const CELL_GAP = CONFIG.cellGap;
             const CANVAS_PADDING = CONFIG.canvasPadding;
             const MONSTER_DEMAND_PERCENT = CONFIG.monsterDemandPercent;
+            // 武器系统配置
+            const WEAPON_UPGRADE_COSTS = CONFIG.weaponUpgradeCosts; // Lv0→1, Lv1→2, Lv2→3, Lv3→4
+            const WEAPON_DEMAND_PERCENTS = CONFIG.weaponDemandPercents; // 索引=武器等级，守关索要比例
 
             // ==================== 游戏状态 ====================
             let grid = []; // grid[row][col] = { lit, flowers: [{x,y,color}], litIndex: -1, isStair: false }
@@ -152,15 +170,23 @@
             let monsterDemandLevel = 1; // 怪物索要等级（随遭遇次数增加）
             let treasureFound = false; // 是否找到宝藏（第四层）
             let treasureFragments = 0; // 已获得的宝藏碎片数（0-3）
-            let compassUsedCount = 0; // 指南针使用次数（影响方位精度）
             let particles = []; // 粒子效果
             let hoveredCell = null; // 当前悬停的单元格
             let cellPixelSize = CELL_BASE_SIZE; // 实际单元格像素大小（可能缩放）
             let canvasCSSWidth = 0; // Canvas的CSS宽度（用于正确计算网格偏移）
             let canvasCSSHeight = 0; // Canvas的CSS高度
-            let currentDirectionHint = ''; // 当前指南针提示
             let inGuerrillaMode = false; // 是否处于游击模式
+            // 指引者系统（v2.0）
+            let guideLocations = []; // 三个指引者地块的位置 [{row, col, type, revealed}]
+            let guideLog = []; // 指引者提示日志
+            // type: 'stair' | 'weapon' | 'reveal'（第4层全为'treasure'）
             let guerrillaTriggerCount = 0; // 游击模式触发计数器
+            // 花朵再生机制
+            let regrowCooldown = 0; // 再生冷却帧计数（约60fps）
+            // 武器系统
+            let weaponLevel = 0; // 0=无武器, 1-4=武器等级
+            let weaponLocation = null; // 当前层武器箱位置 {row, col}
+            let guerrillaDemandPercent = 0.5; // 游击怪物索要比例（默认50%，攻击后降至30%）
 
             // ==================== 初始化 ====================
             function initGrid() {
@@ -174,6 +200,9 @@
                             litIndex: -1, // -1表示未点亮，>=0表示点亮顺序
                             isStair: false,
                             withered: false, // 枯萎地块
+                            isGuide: false,
+                            guideIndex: -1,
+                            isWeapon: false,
                         };
                     }
                 }
@@ -220,10 +249,69 @@
                 
                 // 重置其他状态
                 monsterDemandLevel = 1;
-                compassUsedCount = 0;
-                currentDirectionHint = '';
                 inGuerrillaMode = false;
                 guerrillaTriggerCount = 0;
+                guerrillaDemandPercent = 0.5;
+                
+                // 第1-3层放置武器箱，第4层不放（可从之前层携带）
+                weaponLocation = null;
+                if (currentLayer < TOTAL_LAYERS) {
+                    let weaponRow, weaponCol;
+                    do {
+                        weaponRow = Math.floor(Math.random() * GRID_SIZE);
+                        weaponCol = Math.floor(Math.random() * GRID_SIZE);
+                    } while (
+                        (weaponRow === centerRow && weaponCol === centerCol) ||
+                        (Math.abs(weaponRow - centerRow) <= 1 && Math.abs(weaponCol - centerCol) <= 1) ||
+                        (weaponRow === stairRow && weaponCol === stairCol)
+                    );
+                    weaponLocation = {row: weaponRow, col: weaponCol};
+                    grid[weaponRow][weaponCol].isWeapon = true;
+                    // 不显示武器箱位置到控制台（玩家需通过指引者推理）
+                }
+                
+                // 生成三个指引者地块（v2.0）
+                guideLocations = [];
+                const occupiedPositions = new Set();
+                occupiedPositions.add(`${centerRow},${centerCol}`);
+                occupiedPositions.add(`${stairRow},${stairCol}`);
+                if (weaponLocation) occupiedPositions.add(`${weaponLocation.row},${weaponLocation.col}`);
+                if (treasureLocation) occupiedPositions.add(`${treasureLocation.row},${treasureLocation.col}`);
+                
+                // 指引者类型分配
+                const guideTypes = shuffleArray(['stair', 'weapon', 'reveal']);
+                
+                for (let i = 0; i < 3; i++) {
+                    let guideRow, guideCol;
+                    let attempts = 0;
+                    do {
+                        guideRow = Math.floor(Math.random() * GRID_SIZE);
+                        guideCol = Math.floor(Math.random() * GRID_SIZE);
+                        attempts++;
+                        if (attempts > 100) break;
+                    } while (occupiedPositions.has(`${guideRow},${guideCol}`));
+                    
+                    occupiedPositions.add(`${guideRow},${guideCol}`);
+                    guideLocations.push({
+                        row: guideRow,
+                        col: guideCol,
+                        type: guideTypes[i],
+                        revealed: false
+                    });
+                    
+                    grid[guideRow][guideCol].isGuide = true;
+                    grid[guideRow][guideCol].guideIndex = i;
+                }
+            }
+            
+            // 工具：随机打乱数组
+            function shuffleArray(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
             }
 
             function generateFlowersForCell(row, col, count) {
@@ -286,6 +374,9 @@
             function resetGame() {
                 currentLayer = 1;
                 treasureFragments = 0;
+                guideLog = [];
+                weaponLevel = 0;
+                guerrillaDemandPercent = 0.5;
                 initGrid();
                 backpack = [];
                 treasureFound = false;
@@ -293,7 +384,7 @@
                 particles = [];
                 hoveredCell = null;
                 updateAllUI();
-                hintText.textContent = '点击已点亮的地块采集花朵。寻找通往下一层的阶梯！🧭';
+                hintText.textContent = '点击已点亮的地块采集花朵。寻找通往下一层的阶梯和指引者！🧭';
                 hintText.className = 'hint-text';
             }
 
@@ -383,70 +474,71 @@
             }
 
             // ==================== 游戏逻辑 ====================
-            // 使用指南针
-            function useCompass() {
-                if (currentLayer === TOTAL_LAYERS && treasureFound) {
-                    showHint('宝藏已经找到了！无需使用指南针~ 💎', '');
-                    compassHint.textContent = '宝藏已找到，无需指南针';
-                    return false;
-                }
-                if (backpack.length < COMPASS_COST) {
-                    showHint(`指南针需要 ${COMPASS_COST} 朵花，当前只有 ${backpack.length} 朵`, 'warning');
-                    compassHint.textContent = `需要 ${COMPASS_COST} 朵花，当前 ${backpack.length} 朵`;
-                    return false;
-                }
-                if (monsterActive) {
-                    showHint('怪物出现时无法使用指南针！', 'warning');
-                    compassHint.textContent = '怪物出现时无法使用';
-                    return false;
-                }
+            // 激活指引者（点亮地块时自动触发，免费获得坐标）
+            function activateGuide(row, col) {
+                if (monsterActive) return false;
+                const cell = grid[row][col];
+                if (!cell.lit || !cell.isGuide) return false;
                 
-                // 消耗花朵
-                backpack.splice(backpack.length - COMPASS_COST, COMPASS_COST);
-                compassUsedCount++;
+                const guideInfo = guideLocations.find(g => g.row === row && g.col === col);
+                if (!guideInfo || guideInfo.revealed) return false;
                 
-                // 计算阶梯方向（第四层计算宝藏方向）
-                const targetLocation = currentLayer === TOTAL_LAYERS && treasureFound ? null : 
-                                     (currentLayer === TOTAL_LAYERS ? treasureLocation : stairLocation);
-                if (!targetLocation) {
-                    showHint('🧭 指南针：目标已找到或不存在', '');
-                    compassHint.textContent = '目标已找到或不存在';
-                    return false;
-                }
-                
-                const playerRow = litTilesHistory.length > 0 ? litTilesHistory[litTilesHistory.length - 1].row : Math.floor(GRID_SIZE / 2);
-                const playerCol = litTilesHistory.length > 0 ? litTilesHistory[litTilesHistory.length - 1].col : Math.floor(GRID_SIZE / 2);
-                
-                const dRow = targetLocation.row - playerRow;
-                const dCol = targetLocation.col - playerCol;
-                
-                // 根据使用次数调整精度
-                let direction = '';
-                const targetName = currentLayer === TOTAL_LAYERS ? '宝藏' : '阶梯';
-                
-                if (compassUsedCount === 1) {
-                    // 第一次使用：大致方向
-                    if (Math.abs(dRow) > Math.abs(dCol)) {
-                        direction = dRow > 0 ? '南边' : '北边';
+                let hintText = '';
+                if (currentLayer === TOTAL_LAYERS) {
+                    hintText = `我看到一个重要的碎片，在 (${treasureLocation.row}, ${treasureLocation.col}) 处。`;
+                } else if (guideInfo.type === 'stair') {
+                    hintText = `我看到一个重要的东西，在 (${stairLocation.row}, ${stairLocation.col}) 处。`;
+                } else if (guideInfo.type === 'weapon') {
+                    const wl = weaponLocation || {row: '?', col: '?'};
+                    hintText = `我看到一个重要的东西，在 (${wl.row}, ${wl.col}) 处。`;
+                } else if (guideInfo.type === 'reveal') {
+                    const others = guideLocations.filter(g => g !== guideInfo && !g.revealed);
+                    if (others.length === 0) {
+                        hintText = '所有指引者都已解析。';
                     } else {
-                        direction = dCol > 0 ? '东边' : '西边';
+                        const target = others[Math.floor(Math.random() * others.length)];
+                        const targetType = target.type === 'stair' ? '阶梯' : (target.type === 'weapon' ? '武器箱' : '指引者');
+                        hintText = `位于 (${target.row},${target.col}) 处的指引者指向的是${targetType}。`;
                     }
-                    currentDirectionHint = `${targetName}大致在${direction}`;
-                } else if (compassUsedCount === 2) {
-                    // 第二次使用：更精确
-                    const vertical = dRow > 0 ? '南' : '北';
-                    const horizontal = dCol > 0 ? '东' : '西';
-                    currentDirectionHint = `${targetName}位于${vertical}${Math.abs(dRow)}格，${horizontal}${Math.abs(dCol)}格`;
-                } else {
-                    // 第三次及以上：精确位置
-                    currentDirectionHint = `${targetName}位于 (${targetLocation.row},${targetLocation.col})`;
                 }
                 
-                showHint(`🧭 指南针：${currentDirectionHint} (消耗${COMPASS_COST}朵花)`, '');
-                // 更新指南针提示区域
-                compassHint.textContent = currentDirectionHint;
+                guideInfo.revealed = true;
+                addGuideLog(`位于 (${row},${col}) 的指引者说：${hintText}`, 'hint');
+                showHint(`🧭 指引者：${hintText}`, '');
                 updateAllUI();
                 return true;
+            }
+            
+            function addGuideLog(message, className = 'normal') {
+                const entry = {
+                    text: message,
+                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    class: className
+                };
+                guideLog.unshift(entry);
+                if (guideLog.length > 15) guideLog.pop();
+                updateGuideLogUI();
+            }
+            
+            function updateGuideLogUI() {
+                if (!guideLogContent) return;
+                
+                let html = '';
+                
+                if (guideLog.length > 0) {
+                    html += '<div style="margin:0 0 6px;font-size:0.85em;color:#fff;font-weight:600;">📜 指引者记录</div>';
+                    for (const entry of guideLog) {
+                        html += `<div class="guide-log-entry ${entry.class}">
+                            <span style="color:rgba(255,255,255,0.6);font-size:0.8em;">${entry.time}</span><br>
+                            ${entry.text}
+                        </div>`;
+                    }
+                } else {
+                    html = '<div class="guide-log-empty">点亮指引者地块后自动获得坐标信息</div>';
+                }
+                
+                guideLogContent.innerHTML = html;
+                guideLogContent.scrollTop = 0;
             }
             
             function collectFlower(row, col) {
@@ -534,6 +626,19 @@
                     return true;
                 }
                 
+                // 检查是否为武器箱地块
+                if (grid[row][col].isWeapon && weaponLevel === 0) {
+                    weaponLevel = 1;
+                    const bounds = getCellBounds(row, col);
+                    spawnParticles(bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, '#ffd700', 20);
+                    showHint(`🗡️ 获得武器 Lv.${weaponLevel}！可在界面上升级。`, 'success');
+                }
+                
+                // 激活指引者（免费自动获得坐标信息）
+                if (grid[row][col].isGuide) {
+                    activateGuide(row, col);
+                }
+                
                 // 粒子效果
                 const bounds = getCellBounds(row, col);
                 const cx = bounds.x + bounds.w / 2;
@@ -541,6 +646,27 @@
                 spawnParticles(cx, cy, '#a0e8a0', 12);
                 updateAllUI();
                 showHint(`新地块点亮！上面有 ${flowerCount} 朵花~ 🌼`, '');
+                
+                // 替代胜利：游击模式下点亮所有非枯萎地块即完成本层
+                if (inGuerrillaMode) {
+                    let allNonWitheredLit = true;
+                    for (let r = 0; r < GRID_SIZE; r++) {
+                        for (let c = 0; c < GRID_SIZE; c++) {
+                            if (!grid[r][c].withered && !grid[r][c].lit) {
+                                allNonWitheredLit = false;
+                                break;
+                            }
+                        }
+                        if (!allNonWitheredLit) break;
+                    }
+                    if (allNonWitheredLit) {
+                        showHint('🌿 全图点亮！强迫怪物退让，进入下一层！', 'success');
+                        inGuerrillaMode = false;
+                        guerrillaTriggerCount = 0;
+                        advanceToNextLayer();
+                        return true;
+                    }
+                }
                 
                 // 检查游击怪物触发（如果处于游击模式）
                 if (inGuerrillaMode) {
@@ -555,83 +681,74 @@
                 return true;
             }
 
-            function triggerStairMonster() {
+            function getGuardDemandPercent() {
+                // 有武器且非游击模式时，受武器等级影响；游击模式使用guerrillaDemandPercent
+                if (inGuerrillaMode) return guerrillaDemandPercent;
+                return weaponLevel > 0 ? WEAPON_DEMAND_PERCENTS[weaponLevel] : MONSTER_DEMAND_PERCENT;
+            }
+            
+            function showMonsterOverlay(percent, demand, isGuerrilla) {
                 monsterActive = true;
-                // 计算索要数量：当前背包花朵数量的百分比（向上取整）
-                const demand = Math.ceil(backpack.length * MONSTER_DEMAND_PERCENT);
-                const percent = Math.round(MONSTER_DEMAND_PERCENT * 100);
-                monsterStolenInfo.textContent = `守关怪物索要你背包中 ${backpack.length} 朵花的 ${percent}% 作为通行代价（${demand} 朵花）。`;
+                const type = isGuerrilla ? '游击怪物' : '守关怪物';
+                monsterStolenInfo.textContent = `${type}索要你背包中 ${backpack.length} 朵花的 ${Math.round(percent * 100)}% 作为通行代价（${demand} 朵花）。`;
+                
+                // 显示攻击按钮的条件：非游击模式且持有武器
+                if (!inGuerrillaMode && weaponLevel > 0) {
+                    document.querySelector('.btn-monster-attack').style.display = 'inline-block';
+                } else {
+                    document.querySelector('.btn-monster-attack').style.display = 'none';
+                }
                 
                 updateAllUI();
-                // 震动效果
                 gameWrapper.classList.add('shaking');
                 setTimeout(() => gameWrapper.classList.remove('shaking'), 600);
                 monsterOverlay.style.display = 'flex';
+            }
+            
+            function triggerStairMonster() {
+                const demand = Math.ceil(backpack.length * getGuardDemandPercent());
+                const percent = getGuardDemandPercent();
+                showMonsterOverlay(percent, demand, false);
             }
             
             function triggerGuerrillaMonster() {
-                monsterActive = true;
-                // 计算索要数量：当前背包花朵数量的百分比（向上取整）
-                const demand = Math.ceil(backpack.length * MONSTER_DEMAND_PERCENT);
-                const percent = Math.round(MONSTER_DEMAND_PERCENT * 100);
-                monsterStolenInfo.textContent = `游击怪物再次出现！索要你背包中 ${backpack.length} 朵花的 ${percent}% 作为通行代价（${demand} 朵花）。`;
-                
-                updateAllUI();
-                // 震动效果
-                gameWrapper.classList.add('shaking');
-                setTimeout(() => gameWrapper.classList.remove('shaking'), 600);
-                monsterOverlay.style.display = 'flex';
+                const demand = Math.ceil(backpack.length * guerrillaDemandPercent);
+                showMonsterOverlay(guerrillaDemandPercent, demand, true);
+            }
+            
+            function destroyRandomTile() {
+                if (litTilesHistory.length === 0) return false;
+                let destroyIndex = Math.floor(Math.random() * litTilesHistory.length);
+                if (destroyIndex === 0 && litTilesHistory.length > 1) {
+                    destroyIndex = 1 + Math.floor(Math.random() * (litTilesHistory.length - 1));
+                }
+                const tileToDestroy = litTilesHistory[destroyIndex];
+                const destroyedTile = grid[tileToDestroy.row][tileToDestroy.col];
+                destroyedTile.lit = false;
+                destroyedTile.litIndex = -1;
+                destroyedTile.flowers = [];
+                destroyedTile.withered = true;
+                litTilesHistory.splice(destroyIndex, 1);
+                for (let i = destroyIndex; i < litTilesHistory.length; i++) {
+                    const tile = litTilesHistory[i];
+                    grid[tile.row][tile.col].litIndex = i;
+                }
+                litCount--;
+                showHint(`怪物摧毁了一个地块！剩余点亮地块：${litTilesHistory.length}/${MAX_LIT_TILES}`, 'danger');
+                return true;
             }
             
             function payMonster() {
-                // 支付怪物索要
-                const demand = Math.ceil(backpack.length * MONSTER_DEMAND_PERCENT);
+                const demand = Math.ceil(backpack.length * getGuardDemandPercent());
                 
-                // 修复问题1：背包里至少要有1朵花才能支付
                 if (backpack.length === 0) {
                     showHint(`背包里没有花，无法支付！`, 'danger');
-                    
-                    // 背包为空时，怪物会摧毁一个随机已点亮地块并进入游击模式
-                    if (litTilesHistory.length > 0) {
-                        // 避免摧毁起点（第一个点亮的地块）
-                        let destroyIndex = Math.floor(Math.random() * litTilesHistory.length);
-                        // 如果是起点且还有其他地块，选择另一个
-                        if (destroyIndex === 0 && litTilesHistory.length > 1) {
-                            destroyIndex = 1 + Math.floor(Math.random() * (litTilesHistory.length - 1));
-                        }
-                        
-                        const tileToDestroy = litTilesHistory[destroyIndex];
-                        const destroyedTile = grid[tileToDestroy.row][tileToDestroy.col];
-                        
-                        // 设置地块为枯萎状态
-                        destroyedTile.lit = false;
-                        destroyedTile.litIndex = -1;
-                        destroyedTile.flowers = [];
-                        destroyedTile.withered = true;
-                        
-                        // 从历史中移除
-                        litTilesHistory.splice(destroyIndex, 1);
-                        
-                        // 更新后续地块的索引
-                        for (let i = destroyIndex; i < litTilesHistory.length; i++) {
-                            const tile = litTilesHistory[i];
-                            grid[tile.row][tile.col].litIndex = i;
-                        }
-                        
-                        litCount--;
-                        
-                        showHint(`怪物摧毁了一个地块！剩余点亮地块：${litTilesHistory.length}/${MAX_LIT_TILES}`, 'danger');
-                    } else {
-                        showHint('幸运的是没有地块可摧毁！', 'warning');
-                    }
-                    
-                    // 进入游击模式（如果是守关怪物第一次出现）
+                    destroyRandomTile();
                     if (!inGuerrillaMode) {
                         inGuerrillaMode = true;
                         guerrillaTriggerCount = 0;
                         showHint(`进入游击模式，每点亮${MONSTER_INTERVAL}块地会再次遇到怪物！`, 'warning');
                     }
-                    
                     monsterOverlay.style.display = 'none';
                     monsterActive = false;
                     updateAllUI();
@@ -640,20 +757,10 @@
                 
                 if (backpack.length >= demand) {
                     backpack.splice(backpack.length - demand, demand);
-                    
-                    // 修复问题2：在游击模式下支付怪物也可以进入下一层
-                    // 如果是守关怪物，进入下一层
-                    if (!inGuerrillaMode) {
-                        showHint(`支付了 ${demand} 朵花，怪物满意地离开了！进入下一层！💰`, 'warning');
-                        advanceToNextLayer();
-                    } else {
-                        // 游击模式下支付怪物，也进入下一层
-                        showHint(`支付了 ${demand} 朵花，退出游击模式，进入下一层！💰`, 'success');
-                        advanceToNextLayer();
-                        // 退出游击模式
-                        inGuerrillaMode = false;
-                        guerrillaTriggerCount = 0;
-                    }
+                    showHint(`支付了 ${demand} 朵花，怪物满意地离开了！进入下一层！💰`, inGuerrillaMode ? 'success' : 'warning');
+                    inGuerrillaMode = false;
+                    guerrillaTriggerCount = 0;
+                    advanceToNextLayer();
                 } else {
                     showHint(`花朵不足，无法支付！`, 'danger');
                 }
@@ -664,51 +771,53 @@
             }
             
             function refuseMonster() {
-                // 拒绝支付，怪物摧毁一个随机已点亮地块
-                if (litTilesHistory.length > 0) {
-                    // 避免摧毁起点（第一个点亮的地块）
-                    let destroyIndex = Math.floor(Math.random() * litTilesHistory.length);
-                    // 如果是起点且还有其他地块，选择另一个
-                    if (destroyIndex === 0 && litTilesHistory.length > 1) {
-                        destroyIndex = 1 + Math.floor(Math.random() * (litTilesHistory.length - 1));
-                    }
-                    
-                    const tileToDestroy = litTilesHistory[destroyIndex];
-                    const destroyedTile = grid[tileToDestroy.row][tileToDestroy.col];
-                    
-                    // 设置地块为枯萎状态
-                    destroyedTile.lit = false;
-                    destroyedTile.litIndex = -1;
-                    destroyedTile.flowers = [];
-                    destroyedTile.withered = true;
-                    
-                    // 从历史中移除
-                    litTilesHistory.splice(destroyIndex, 1);
-                    
-                    // 更新后续地块的索引
-                    for (let i = destroyIndex; i < litTilesHistory.length; i++) {
-                        const tile = litTilesHistory[i];
-                        grid[tile.row][tile.col].litIndex = i;
-                    }
-                    
-                    litCount--;
-                    
-                    showHint(`怪物摧毁了一个地块！剩余点亮地块：${litTilesHistory.length}/${MAX_LIT_TILES}`, 'danger');
-                    
-                    // 如果是守关怪物，进入游击模式
-                    if (!inGuerrillaMode) {
-                        inGuerrillaMode = true;
-                        guerrillaTriggerCount = 0;
-                        showHint(`你拒绝了怪物！进入游击模式，每点亮${MONSTER_INTERVAL}块地会再次遇到怪物！`, 'warning');
-                    }
-                } else {
+                const destroyed = destroyRandomTile();
+                if (!destroyed) {
                     showHint('幸运的是没有地块可摧毁！', 'warning');
                 }
-                
+                if (!inGuerrillaMode) {
+                    inGuerrillaMode = true;
+                    guerrillaTriggerCount = 0;
+                    showHint(`你拒绝了怪物！进入游击模式，每点亮${MONSTER_INTERVAL}块地会再次遇到怪物！`, 'warning');
+                }
                 monsterOverlay.style.display = 'none';
                 monsterActive = false;
                 updateAllUI();
             }
+            
+            // 攻击怪物（仅守关、有武器时可用）
+            function attackMonster() {
+                if (inGuerrillaMode || weaponLevel === 0) return;
+                // 攻击效果：摧毁2块随机已点亮地块（优先有花的），进入游击模式
+                showHint('⚔️ 你攻击了怪物！怪物摧毁了2块地块并进入了游击模式！', 'danger');
+                destroyRandomTile();
+                destroyRandomTile();
+                inGuerrillaMode = true;
+                guerrillaTriggerCount = 0;
+                guerrillaDemandPercent = 0.3; // 攻击后游击怪物索要30%
+                monsterOverlay.style.display = 'none';
+                monsterActive = false;
+                updateAllUI();
+            }
+            window.attackMonster = attackMonster;
+            
+            // 武器升级
+            function upgradeWeapon() {
+                if (weaponLevel <= 0 || weaponLevel >= 4) {
+                    showHint('武器已满级或未获得武器！', 'warning');
+                    return;
+                }
+                const cost = WEAPON_UPGRADE_COSTS[weaponLevel]; // 升级到下一级的花费
+                if (backpack.length < cost) {
+                    showHint(`升级到 Lv.${weaponLevel + 1} 需要 ${cost} 朵花，当前只有 ${backpack.length} 朵`, 'warning');
+                    return;
+                }
+                backpack.splice(backpack.length - cost, cost);
+                weaponLevel++;
+                showHint(`🗡️ 武器升级到 Lv.${weaponLevel}！怪物的要求将降低至 ${Math.round(WEAPON_DEMAND_PERCENTS[weaponLevel] * 100)}%。`, 'success');
+                updateAllUI();
+            }
+            window.upgradeWeapon = upgradeWeapon;
             
             function restoreWitheredTile(row, col) {
                 const cell = grid[row][col];
@@ -745,7 +854,7 @@
             function advanceToNextLayer() {
                 if (currentLayer < TOTAL_LAYERS) {
                     // 获得宝藏碎片（前三层）
-                    if (currentLayer < 3) { // 第一、二、三层获得碎片
+                    if (currentLayer < TOTAL_LAYERS) { // 第1~3层获得碎片（进入下一层时）
                         treasureFragments++;
                         showHint(`🎊 进入第${currentLayer + 1}层！获得宝藏碎片 ${treasureFragments}/3`, '');
                     } else {
@@ -753,6 +862,7 @@
                     }
                     
                     currentLayer++;
+                    guideLog = []; // 清除旧层的指引者提示
                     initGrid();
                     updateAllUI();
                     showHint(`进入第${currentLayer}层：${getLayerTheme()}，点亮需要${getFlowersToLight()}朵花`, '');
@@ -940,6 +1050,27 @@
                         ctx.textAlign = 'center';
                         ctx.fillText('🪜', x + w / 2, y + 22);
                     }
+                    
+                    // 指引者地块标记（已点亮，免费提供坐标）
+                    if (cell.isGuide) {
+                        const guideInfo = guideLocations.find(g => g.row === row && g.col === col);
+                        const isUsed = guideInfo && guideInfo.revealed;
+                        ctx.globalAlpha = isUsed ? 0.5 : 1.0;
+                        ctx.fillStyle = isUsed ? 'rgba(160,220,255,0.5)' : 'rgba(160,220,255,0.9)';
+                        ctx.font = 'bold 14px "Segoe UI","PingFang SC",sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(isUsed ? '✅' : '🧭', x + w / 2, y + 22);
+                        ctx.globalAlpha = 1.0;
+                    }
+                    
+                    // 武器箱地块标记（已点亮）
+                    if (cell.isWeapon) {
+                        const hasWeapon = weaponLevel > 0;
+                        ctx.fillStyle = hasWeapon ? 'rgba(255,215,0,0.6)' : 'rgba(255,215,0,0.9)';
+                        ctx.font = 'bold 16px "Segoe UI","PingFang SC",sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(hasWeapon ? '✅' : '🗡️', x + w / 2, y + 22);
+                    }
                 } else {
                     // 未点亮的草皮
                     const isExpandable = isAdjacentToLit(row, col);
@@ -999,6 +1130,22 @@
                         ctx.font = '10px "Segoe UI","PingFang SC",sans-serif';
                         ctx.textAlign = 'center';
                         ctx.fillText(`${getFlowersToLight()}🌸`, x + w / 2, y + h - 6);
+                    }
+                    
+                    // 未点亮指引者地块标记
+                    if (cell.isGuide) {
+                        ctx.fillStyle = 'rgba(160,220,255,0.6)';
+                        ctx.font = 'bold 14px "Segoe UI","PingFang SC",sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('❓', x + w / 2, y + 18);
+                    }
+                    
+                    // 未点亮武器箱地块标记
+                    if (cell.isWeapon) {
+                        ctx.fillStyle = 'rgba(255,215,0,0.5)';
+                        ctx.font = 'bold 14px "Segoe UI","PingFang SC",sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(' ', x + w / 2, y + 18);
                     }
                 }
 
@@ -1097,34 +1244,28 @@
             function updateAllUI() {
                 updateProgressUI();
                 updateBackpackUI();
-                updateCompassUI();
+                updateGuideLogUI();
+                updateWeaponUI();
+            }
+            
+            function updateWeaponUI() {
+                if (weaponLevel > 0) {
+                    weaponPanel.style.display = 'flex';
+                    weaponLevelText.textContent = weaponLevel;
+                    const nextLevelCost = weaponLevel < 4 ? WEAPON_UPGRADE_COSTS[weaponLevel] : 0;
+                    if (weaponLevel >= 4) {
+                        btnWeaponUpgrade.textContent = '已满级';
+                        btnWeaponUpgrade.disabled = true;
+                    } else {
+                        btnWeaponUpgrade.textContent = `⬆ 升级 (${nextLevelCost}🌸)`;
+                        btnWeaponUpgrade.disabled = backpack.length < nextLevelCost;
+                    }
+                } else {
+                    weaponPanel.style.display = 'none';
+                }
             }
 
-            function updateCompassUI() {
-                // 更新指南针按钮状态
-                if (currentLayer === TOTAL_LAYERS && treasureFound) {
-                    btnCompass.disabled = true;
-                    btnCompass.title = '宝藏已找到，无需使用指南针';
-                } else if (monsterActive) {
-                    btnCompass.disabled = true;
-                    btnCompass.title = '怪物出现时无法使用指南针';
-                } else if (backpack.length < COMPASS_COST) {
-                    btnCompass.disabled = true;
-                    btnCompass.title = `指南针需要 ${COMPASS_COST} 朵花，当前只有 ${backpack.length} 朵`;
-                } else {
-                    btnCompass.disabled = false;
-                    btnCompass.title = `使用指南针寻找${currentLayer === TOTAL_LAYERS ? '宝藏' : '阶梯'}（消耗${COMPASS_COST}朵花）`;
-                }
-                
-                // 更新指南针提示文本
-                if (currentDirectionHint && !(currentLayer === TOTAL_LAYERS && treasureFound)) {
-                    compassHint.textContent = currentDirectionHint;
-                } else if (currentLayer === TOTAL_LAYERS && treasureFound) {
-                    compassHint.textContent = '宝藏已找到！';
-                } else {
-                    compassHint.textContent = '使用指南针寻找方向';
-                }
-            }
+            
 
             function updateProgressUI() {
                 // 更新层数显示
@@ -1231,7 +1372,7 @@
                         shakeBackpack();
                     }
                 } else if (gridCell.lit) {
-                    // 已点亮 - 尝试采集
+                    // 已点亮 - 采集花朵
                     if (gridCell.flowers.length > 0) {
                         collectFlower(row, col);
                     } else if (isAdjacentToLit(row, col) === false && gridCell.lit) {
@@ -1281,6 +1422,14 @@
             btnMonsterRefuse.addEventListener('click', function() {
                 refuseMonster();
             });
+            
+            btnMonsterAttack.addEventListener('click', function() {
+                attackMonster();
+            });
+            
+            btnWeaponUpgrade.addEventListener('click', function() {
+                upgradeWeapon();
+            });
 
             btnWinOk.addEventListener('click', function() {
                 winOverlay.style.display = 'none';
@@ -1288,12 +1437,7 @@
                 resizeCanvas();
             });
 
-            // 指南针按钮事件
-            btnCompass.addEventListener('click', function() {
-                useCompass();
-            });
-
-            // 键盘快捷键（移除指南针快捷键）
+            // 键盘快捷键
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && monsterActive) {
                     monsterOverlay.style.display = 'none';
@@ -1305,16 +1449,47 @@
                     resetGame();
                     resizeCanvas();
                 }
-                // 指南针快捷键已移除，改为按钮触发
-                // if (e.key === 'c' || e.key === 'C') {
-                //     useCompass();
-                // }
             });
 
             // ==================== 游戏循环 ====================
             function gameLoop() {
                 updateParticles();
                 drawGame(ctx);
+                
+                // 花朵再生：当地图上所有已点亮地块都无花可采时，初始地块缓慢再生
+                regrowCooldown++;
+                if (regrowCooldown >= 120) { // 约2秒（60fps）
+                    regrowCooldown = 0;
+                    const centerRow = Math.floor(GRID_SIZE / 2);
+                    const centerCol = Math.floor(GRID_SIZE / 2);
+                    const centerCell = grid[centerRow] && grid[centerCol] ? grid[centerRow][centerCol] : null;
+                    
+                    if (centerCell && centerCell.lit && !centerCell.withered) {
+                        // 检查所有已点亮地块是否都无花
+                        let allEmpty = true;
+                        for (let r = 0; r < GRID_SIZE; r++) {
+                            for (let c = 0; c < GRID_SIZE; c++) {
+                                if (grid[r][c].lit && grid[r][c].flowers.length > 0) {
+                                    allEmpty = false;
+                                    break;
+                                }
+                            }
+                            if (!allEmpty) break;
+                        }
+                        
+                        // 全部为空且背包未满且初始地块花少（少于初始量的一半）时再生
+                        if (allEmpty && backpack.length < BACKPACK_CAPACITY && centerCell.flowers.length <= 1) {
+                            const flowerColors = ['#f08a9e', '#e85d75', '#f5d76e', '#f9f3e7'];
+                            const newFlower = {
+                                x: 12 + Math.random() * (cellPixelSize - 24),
+                                y: 12 + Math.random() * (cellPixelSize - 24),
+                                color: flowerColors[Math.floor(Math.random() * flowerColors.length)]
+                            };
+                            centerCell.flowers.push(newFlower);
+                        }
+                    }
+                }
+                
                 // 更新悬停光标
                 if (hoveredCell) {
                     const cell = grid[hoveredCell.row][hoveredCell.col];
@@ -1380,7 +1555,7 @@
             console.log('  - 拒绝支付会进入游击模式，每点亮' + MONSTER_INTERVAL + '块地遇到怪物');
             console.log('  - 目标：穿越' + TOTAL_LAYERS + '层深渊，找到"大地之心"');
             console.log('  - 背包容量：' + BACKPACK_CAPACITY + '朵花');
-            console.log('💡 提示：使用指南针（C键）寻找阶梯，前三层获得碎片！');
+            console.log('💡 提示：寻找遍布地图的三个指引者，支付花朵获取关于阶梯/宝藏的提示！');
         })();
     </script>
 </body>

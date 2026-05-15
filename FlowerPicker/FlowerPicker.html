@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>🌿 层渊花园 - 花朵采集与路径探索</title>
     <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
 </head>
 <body>
 
@@ -91,19 +92,52 @@
             const compassHint = document.getElementById('compassHint');
 
             // ==================== 游戏常量 ====================
-            const GRID_SIZE = 5; // 5x5网格
-            const TOTAL_LAYERS = 4; // 总层数：浅草、湿地、荆棘、深渊
-            const BACKPACK_CAPACITY = 6; // 背包槽位
-            const FLOWERS_TO_LIGHT_BASE = 3; // 第一层点亮消耗花朵数
-            const MAX_LIT_TILES = 6; // 同时点亮的地块上限（达到后最早的点亮地块会退化）
-            const MONSTER_INTERVAL = 2; // 游击模式：每点亮2块触发怪物
-            const COMPASS_COST = 2; // 使用指南针消耗的花朵数
-            const INITIAL_FLOWERS = 5; // 初始地块花朵数
-            const NEW_TURF_FLOWERS_MIN_BASE = 3; // 第一层新地块最少花朵
-            const NEW_TURF_FLOWERS_MAX_BASE = 6; // 第一层新地块最多花朵
-            const CELL_BASE_SIZE = 80; // 每个单元格基础大小
-            const CELL_GAP = 5; // 单元格间距
-            const CANVAS_PADDING = 30; // 画布边距
+            // 配置对象（默认值，将从config.js加载或使用默认值）
+            let CONFIG = {
+                gridSize: 5,
+                totalLayers: 4,
+                backpackCapacity: 6,
+                flowersToLightBase: 3,
+                maxLitTiles: 6,
+                monsterInterval: 2,
+                compassCost: 2,
+                initialFlowers: 5,
+                newTurfFlowersMinBase: 3,
+                newTurfFlowersMaxBase: 6,
+                cellBaseSize: 80,
+                cellGap: 5,
+                canvasPadding: 30,
+                monsterDemandPercent: 0.5,
+                layerFlowerRanges: [
+                    {min: 3, max: 6},
+                    {min: 4, max: 7},
+                    {min: 5, max: 8},
+                    {min: 6, max: 9}
+                ]
+            };
+
+            // ==================== 配置加载 ====================
+            // 合并外部配置（如果存在）
+            if (typeof window.GAME_CONFIG !== 'undefined') {
+                Object.assign(CONFIG, window.GAME_CONFIG);
+                console.log('📋 游戏配置已从 config.js 加载');
+            } else {
+                console.log('⚠️  未找到外部配置，使用默认配置');
+            }
+
+            // ==================== 配置常量 ====================
+            const GRID_SIZE = CONFIG.gridSize;
+            const TOTAL_LAYERS = CONFIG.totalLayers;
+            const BACKPACK_CAPACITY = CONFIG.backpackCapacity;
+            const FLOWERS_TO_LIGHT_BASE = CONFIG.flowersToLightBase;
+            const MAX_LIT_TILES = CONFIG.maxLitTiles;
+            const MONSTER_INTERVAL = CONFIG.monsterInterval;
+            const COMPASS_COST = CONFIG.compassCost;
+            const INITIAL_FLOWERS = CONFIG.initialFlowers;
+            const CELL_BASE_SIZE = CONFIG.cellBaseSize;
+            const CELL_GAP = CONFIG.cellGap;
+            const CANVAS_PADDING = CONFIG.canvasPadding;
+            const MONSTER_DEMAND_PERCENT = CONFIG.monsterDemandPercent;
 
             // ==================== 游戏状态 ====================
             let grid = []; // grid[row][col] = { lit, flowers: [{x,y,color}], litIndex: -1, isStair: false }
@@ -270,19 +304,15 @@
             }
             
             function getNewTileFlowersMin() {
-                // 根据策划案：新地块花朵生成数量逐步减少（3~6 → 2~5 → 2~4 → 1~3）
-                if (currentLayer === 1) return 3;
-                if (currentLayer === 2) return 4;
-                if (currentLayer === 3) return 5;
-                return 1; // 第4层
+                // 从配置中获取当前层花朵生成范围
+                const layerIndex = Math.min(currentLayer - 1, CONFIG.layerFlowerRanges.length - 1);
+                return CONFIG.layerFlowerRanges[layerIndex].min;
             }
             
             function getNewTileFlowersMax() {
-                // 根据策划案：新地块花朵生成数量逐步减少（3~6 → 2~5 → 2~4 → 1~3）
-                if (currentLayer === 1) return 6;
-                if (currentLayer === 2) return 7;
-                if (currentLayer === 3) return 8;
-                return 3; // 第4层
+                // 从配置中获取当前层花朵生成范围
+                const layerIndex = Math.min(currentLayer - 1, CONFIG.layerFlowerRanges.length - 1);
+                return CONFIG.layerFlowerRanges[layerIndex].max;
             }
             
             function getLayerTheme() {
@@ -527,9 +557,10 @@
 
             function triggerStairMonster() {
                 monsterActive = true;
-                // 计算索要数量：当前背包花朵数量的50%（向上取整）
-                const demand = Math.ceil(backpack.length * 0.5);
-                monsterStolenInfo.textContent = `守关怪物索要你背包中 ${backpack.length} 朵花的 50% 作为通行代价（${demand} 朵花）。`;
+                // 计算索要数量：当前背包花朵数量的百分比（向上取整）
+                const demand = Math.ceil(backpack.length * MONSTER_DEMAND_PERCENT);
+                const percent = Math.round(MONSTER_DEMAND_PERCENT * 100);
+                monsterStolenInfo.textContent = `守关怪物索要你背包中 ${backpack.length} 朵花的 ${percent}% 作为通行代价（${demand} 朵花）。`;
                 
                 updateAllUI();
                 // 震动效果
@@ -540,9 +571,10 @@
             
             function triggerGuerrillaMonster() {
                 monsterActive = true;
-                // 计算索要数量：当前背包花朵数量的50%（向上取整）
-                const demand = Math.ceil(backpack.length * 0.5);
-                monsterStolenInfo.textContent = `游击怪物再次出现！索要你背包中 ${backpack.length} 朵花的 50% 作为通行代价（${demand} 朵花）。`;
+                // 计算索要数量：当前背包花朵数量的百分比（向上取整）
+                const demand = Math.ceil(backpack.length * MONSTER_DEMAND_PERCENT);
+                const percent = Math.round(MONSTER_DEMAND_PERCENT * 100);
+                monsterStolenInfo.textContent = `游击怪物再次出现！索要你背包中 ${backpack.length} 朵花的 ${percent}% 作为通行代价（${demand} 朵花）。`;
                 
                 updateAllUI();
                 // 震动效果
@@ -553,7 +585,7 @@
             
             function payMonster() {
                 // 支付怪物索要
-                const demand = Math.ceil(backpack.length * 0.5);
+                const demand = Math.ceil(backpack.length * MONSTER_DEMAND_PERCENT);
                 
                 // 修复问题1：背包里至少要有1朵花才能支付
                 if (backpack.length === 0) {

@@ -590,6 +590,48 @@
                 // 修复问题1：背包里至少要有1朵花才能支付
                 if (backpack.length === 0) {
                     showHint(`背包里没有花，无法支付！`, 'danger');
+                    
+                    // 背包为空时，怪物会摧毁一个随机已点亮地块并进入游击模式
+                    if (litTilesHistory.length > 0) {
+                        // 避免摧毁起点（第一个点亮的地块）
+                        let destroyIndex = Math.floor(Math.random() * litTilesHistory.length);
+                        // 如果是起点且还有其他地块，选择另一个
+                        if (destroyIndex === 0 && litTilesHistory.length > 1) {
+                            destroyIndex = 1 + Math.floor(Math.random() * (litTilesHistory.length - 1));
+                        }
+                        
+                        const tileToDestroy = litTilesHistory[destroyIndex];
+                        const destroyedTile = grid[tileToDestroy.row][tileToDestroy.col];
+                        
+                        // 设置地块为枯萎状态
+                        destroyedTile.lit = false;
+                        destroyedTile.litIndex = -1;
+                        destroyedTile.flowers = [];
+                        destroyedTile.withered = true;
+                        
+                        // 从历史中移除
+                        litTilesHistory.splice(destroyIndex, 1);
+                        
+                        // 更新后续地块的索引
+                        for (let i = destroyIndex; i < litTilesHistory.length; i++) {
+                            const tile = litTilesHistory[i];
+                            grid[tile.row][tile.col].litIndex = i;
+                        }
+                        
+                        litCount--;
+                        
+                        showHint(`怪物摧毁了一个地块！剩余点亮地块：${litTilesHistory.length}/${MAX_LIT_TILES}`, 'danger');
+                    } else {
+                        showHint('幸运的是没有地块可摧毁！', 'warning');
+                    }
+                    
+                    // 进入游击模式（如果是守关怪物第一次出现）
+                    if (!inGuerrillaMode) {
+                        inGuerrillaMode = true;
+                        guerrillaTriggerCount = 0;
+                        showHint(`进入游击模式，每点亮${MONSTER_INTERVAL}块地会再次遇到怪物！`, 'warning');
+                    }
+                    
                     monsterOverlay.style.display = 'none';
                     monsterActive = false;
                     updateAllUI();

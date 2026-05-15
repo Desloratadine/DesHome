@@ -493,13 +493,9 @@
                     hintText = `我看到一个重要的东西，在 (${wl.row}, ${wl.col}) 处。`;
                 } else if (guideInfo.type === 'reveal') {
                     const others = guideLocations.filter(g => g !== guideInfo && !g.revealed);
-                    if (others.length === 0) {
-                        hintText = '所有指引者都已解析。';
-                    } else {
-                        const target = others[Math.floor(Math.random() * others.length)];
-                        const targetType = target.type === 'stair' ? '阶梯' : (target.type === 'weapon' ? '武器箱' : '指引者');
-                        hintText = `位于 (${target.row},${target.col}) 处的指引者指向的是${targetType}。`;
-                    }
+                    const target = others[Math.floor(Math.random() * others.length)];
+                    const targetType = target.type === 'stair' ? '阶梯' : (target.type === 'weapon' ? '武器箱' : '指引者');
+                    hintText = `位于 (${target.row},${target.col}) 处的指引者指向的是${targetType}。`;
                 }
                 
                 guideInfo.revealed = true;
@@ -692,12 +688,8 @@
                 const type = isGuerrilla ? '游击怪物' : '守关怪物';
                 monsterStolenInfo.textContent = `${type}索要你背包中 ${backpack.length} 朵花的 ${Math.round(percent * 100)}% 作为通行代价（${demand} 朵花）。`;
                 
-                // 显示攻击按钮的条件：非游击模式且持有武器
-                if (!inGuerrillaMode && weaponLevel > 0) {
-                    document.querySelector('.btn-monster-attack').style.display = 'inline-block';
-                } else {
-                    document.querySelector('.btn-monster-attack').style.display = 'none';
-                }
+                // 显示攻击按钮的条件：持有武器
+                document.querySelector('.btn-monster-attack').style.display = weaponLevel > 0 ? 'inline-block' : 'none';
                 
                 updateAllUI();
                 gameWrapper.classList.add('shaking');
@@ -771,8 +763,10 @@
             }
             
             function refuseMonster() {
-                const destroyed = destroyRandomTile();
-                if (!destroyed) {
+                // 拒绝支付：摧毁两个地块
+                const d1 = destroyRandomTile();
+                const d2 = destroyRandomTile();
+                if (!d1 && !d2) {
                     showHint('幸运的是没有地块可摧毁！', 'warning');
                 }
                 if (!inGuerrillaMode) {
@@ -785,16 +779,12 @@
                 updateAllUI();
             }
             
-            // 攻击怪物（仅守关、有武器时可用）
+            // 攻击怪物（有武器时可用）
             function attackMonster() {
-                if (inGuerrillaMode || weaponLevel === 0) return;
-                // 攻击效果：摧毁2块随机已点亮地块（优先有花的），进入游击模式
-                showHint('⚔️ 你攻击了怪物！怪物摧毁了2块地块并进入了游击模式！', 'danger');
+                if (weaponLevel === 0) return;
+                // 攻击效果：摧毁1块地块，怪物消失，不掠夺花朵
+                showHint('⚔️ 你攻击了怪物！怪物被击退并摧毁了一块地块！', 'danger');
                 destroyRandomTile();
-                destroyRandomTile();
-                inGuerrillaMode = true;
-                guerrillaTriggerCount = 0;
-                guerrillaDemandPercent = 0.3; // 攻击后游击怪物索要30%
                 monsterOverlay.style.display = 'none';
                 monsterActive = false;
                 updateAllUI();

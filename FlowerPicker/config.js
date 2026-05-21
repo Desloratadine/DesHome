@@ -3,18 +3,20 @@ window.GAME_CONFIG = {
     "gridSize": 5,
     "totalLayers": 4,
     "backpackCapacity": 6,
-    "flowersToLightBase": 3,
     "maxLitTiles": 4,
     "monsterInterval": 2,
-    "initialFlowers": 6,
-    "newTurfFlowersMinBase": 3,
+    "initialFlowers": 3,
+    "newTurfFlowersMinBase": 5,
     "newTurfFlowersMaxBase": 6,
     "cellBaseSize": 80,
     "cellGap": 5,
     "canvasPadding": 30,
     "monsterDemandPercent": 0.5,
+    // 第1~4层点亮新地块所需的花朵数量
+    "layerFlowersToLight": [2, 3, 4, 5],
+    // 第1~4层点亮时生成花朵的数量范围
     "layerFlowerRanges": [
-        {"min": 3, "max": 6},
+        {"min": 3, "max": 4},
         {"min": 4, "max": 7},
         {"min": 5, "max": 8},
         {"min": 6, "max": 9}

@@ -207,7 +207,43 @@
         // 失去所有花朵
         STATE.backpack = [];
         cell.greedSpecial = false;
-        if (window.UI) window.UI.showHint('你失去了所有花朵！贪婪得到了暂时的满足... 💸', 'danger');
+
+        // 点亮该地块
+        cell.lit = true;
+        cell.litIndex = STATE.litTilesHistory.length;
+        if (!cell.isGuide) {
+            STATE.litCount++;
+        }
+        STATE.litTilesHistory.push({ row, col });
+
+        const flowerCount = getNewTileFlowersMin() + Math.floor(Math.random() * (getNewTileFlowersMax() - getNewTileFlowersMin() + 1));
+        generateFlowersForCell(row, col, flowerCount);
+
+        // 阶梯触发怪物
+        if (cell.isStair) {
+            if (window.UI) window.UI.showHint('🎉 找到了通往下一层的阶梯！守关怪物出现了！', '');
+            finishGreedEvent();
+            if (window.UI) window.UI.updateAll();
+            if (window.Monster) window.Monster.triggerStair();
+            return true;
+        }
+
+        // 第四层宝藏
+        if (STATE.currentLayer === C.TOTAL_LAYERS && !STATE.treasureFound &&
+            row === STATE.treasureLocation.row && col === STATE.treasureLocation.col) {
+            STATE.treasureFound = true;
+            finishGreedEvent();
+            triggerTreasureFound();
+            return true;
+        }
+
+        // 武器箱
+        if (cell.isWeapon && STATE.weaponLevel === 0) {
+            STATE.weaponLevel = 1;
+            if (window.UI) window.UI.showHint('🗡️ 获得武器 Lv.1！现在可以攻击怪物了！', 'success');
+        }
+
+        if (window.UI) window.UI.showHint('你失去了所有花朵！但贪婪之地化为了可耕种的土地... 🌱', 'warning');
         finishGreedEvent();
         if (window.UI) window.UI.updateAll();
         return true;
@@ -574,7 +610,9 @@
             if (window.UI) window.UI.showHint(`🎊 进入第${STATE.currentLayer + 1}层！获得宝藏碎片 ${STATE.treasureFragments}/3`, '');
             STATE.currentLayer++;
             STATE.guideLog = [];
-            resetHallucinations();
+            if (C.RESET_HALLUCINATIONS_ON_LAYER) {
+                resetHallucinations();
+            }
             STATE.alternativeWinChecked = false;
             initGrid();
             if (window.UI) window.UI.updateAll();
@@ -608,26 +646,59 @@
     }
 
     // ==================== 随机摧毁地块（禁止销毁指引者/阶梯） ====================
-    function destroyRandomTile() {
-        if (STATE.litTilesHistory.length <= 1) return null;
-        // 过滤出可销毁地块：排除指引者、阶梯、起点
-        const destroyable = STATE.litTilesHistory.filter(t => {
+    function getDestroyableTileCount() {
+        if (C.MONSTER_ATTACK_GRAY_TILES) {
+            let count = 0;
+            for (let row = 0; row < C.GRID_SIZE; row++) {
+                for (let col = 0; col < C.GRID_SIZE; col++) {
+                    const cell = STATE.grid[row][col];
+                    if (!cell.isStair && !cell.isGuide && !cell.withered) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+        return STATE.litTilesHistory.filter(t => {
             const cell = STATE.grid[t.row][t.col];
             return !cell.isStair && !cell.isGuide;
-        });
-        if (destroyable.length === 0) return null;
-        const target = destroyable[Math.floor(Math.random() * destroyable.length)];
-        const cell = STATE.grid[target.row][target.col];
-        cell.lit = false;
-        cell.litIndex = -1;
-        cell.flowers = [];
-        cell.withered = true;
-        STATE.litCount--;
-        STATE.litTilesHistory = STATE.litTilesHistory.filter(t => !(t.row === target.row && t.col === target.col));
-        for (let i = 0; i < STATE.litTilesHistory.length; i++) {
-            const tile = STATE.litTilesHistory[i];
-            STATE.grid[tile.row][tile.col].litIndex = i;
+        }).length;
+    }
+
+    function destroyRandomTile() {
+        let candidates;
+        if (C.MONSTER_ATTACK_GRAY_TILES) {
+            candidates = [];
+            for (let row = 0; row < C.GRID_SIZE; row++) {
+                for (let col = 0; col < C.GRID_SIZE; col++) {
+                    const cell = STATE.grid[row][col];
+                    if (!cell.isStair && !cell.isGuide && !cell.withered) {
+                        candidates.push({ row, col });
+                    }
+                }
+            }
+        } else {
+            if (STATE.litTilesHistory.length <= 1) return null;
+            candidates = STATE.litTilesHistory.filter(t => {
+                const cell = STATE.grid[t.row][t.col];
+                return !cell.isStair && !cell.isGuide;
+            });
         }
+        if (candidates.length === 0) return null;
+        const target = candidates[Math.floor(Math.random() * candidates.length)];
+        const cell = STATE.grid[target.row][target.col];
+        if (cell.lit) {
+            cell.lit = false;
+            cell.litIndex = -1;
+            cell.flowers = [];
+            STATE.litCount--;
+            STATE.litTilesHistory = STATE.litTilesHistory.filter(t => !(t.row === target.row && t.col === target.col));
+            for (let i = 0; i < STATE.litTilesHistory.length; i++) {
+                const tile = STATE.litTilesHistory[i];
+                STATE.grid[tile.row][tile.col].litIndex = i;
+            }
+        }
+        cell.withered = true;
         const bounds = getCellBounds(target.row, target.col);
         window.Particles.spawn(bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, '#000', 15);
         return target;
@@ -654,6 +725,7 @@
         triggerTreasureFound: triggerTreasureFound,
         getGuardDemandPercent: getGuardDemandPercent,
         destroyRandomTile: destroyRandomTile,
+        getDestroyableTileCount: getDestroyableTileCount,
         increaseMania: increaseMania,
         increaseGreed: increaseGreed,
         resetHallucinations: resetHallucinations,

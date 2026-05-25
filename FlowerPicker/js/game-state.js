@@ -6,6 +6,10 @@
         backpackCapacity: 6,
         maxLitTiles: 6,
         monsterInterval: 2,
+        allowWitheredRestore: true,
+        monsterRefuseDestroyCount: 1,
+        monsterAttackDestroyCount: 2,
+        monsterAttackGrayTiles: false,
         initialFlowers: 6,
         newTurfFlowersMinBase: 3,
         newTurfFlowersMaxBase: 6,
@@ -13,6 +17,7 @@
         cellGap: 5,
         canvasPadding: 30,
         monsterDemandPercent: 0.5,
+        resetHallucinationsOnLayer: true,
         layerFlowersToLight: [3, 4, 5, 6],
         layerFlowerRanges: [
             {min: 3, max: 6},
@@ -35,6 +40,10 @@
         BACKPACK_CAPACITY: CONFIG.backpackCapacity,
         MAX_LIT_TILES: CONFIG.maxLitTiles,
         MONSTER_INTERVAL: CONFIG.monsterInterval,
+        ALLOW_WITHERED_RESTORE: CONFIG.allowWitheredRestore,
+        MONSTER_REFUSE_DESTROY_COUNT: CONFIG.monsterRefuseDestroyCount,
+        MONSTER_ATTACK_DESTROY_COUNT: CONFIG.monsterAttackDestroyCount,
+        MONSTER_ATTACK_GRAY_TILES: CONFIG.monsterAttackGrayTiles,
         INITIAL_FLOWERS: CONFIG.initialFlowers,
         CELL_BASE_SIZE: CONFIG.cellBaseSize,
         CELL_GAP: CONFIG.cellGap,
@@ -42,6 +51,7 @@
         MONSTER_DEMAND_PERCENT: CONFIG.monsterDemandPercent,
         WEAPON_UPGRADE_COSTS: CONFIG.weaponUpgradeCosts,
         WEAPON_DEMAND_PERCENTS: CONFIG.weaponDemandPercents,
+        RESET_HALLUCINATIONS_ON_LAYER: CONFIG.resetHallucinationsOnLayer,
         LAYER_FLOWERS_TO_LIGHT: CONFIG.layerFlowersToLight,
         layerFlowerRanges: CONFIG.layerFlowerRanges
     };

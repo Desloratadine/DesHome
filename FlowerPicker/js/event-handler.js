@@ -20,6 +20,7 @@
         const gridCell = STATE.grid[row][col];
 
         if (gridCell.withered) {
+            if (!C.ALLOW_WITHERED_RESTORE) return;
             const flowersToLight = window.GameCore.getFlowersToLight();
             if (STATE.backpack.length >= flowersToLight) {
                 window.GameCore.restoreWitheredTile(row, col);

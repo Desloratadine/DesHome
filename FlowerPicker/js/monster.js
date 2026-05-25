@@ -49,15 +49,18 @@
 
     function refuseMonster() {
         // 检查可销毁地块（排除指引者/阶梯后），若无可销毁地块则跳过摧毁
-        const destroyableCount = STATE.litTilesHistory.filter(t => {
-            const cell = STATE.grid[t.row][t.col];
-            return !cell.isStair && !cell.isGuide;
-        }).length;
+        const destroyableCount = window.GameCore.getDestroyableTileCount();
+        let destroyedAny = false;
         if (destroyableCount <= 0) {
             if (window.UI) window.UI.showHint('所有点亮地块均为指引者或阶梯，怪物无法破坏！', 'success');
         } else {
-            const d1 = window.GameCore.destroyRandomTile();
-            if (!d1) {
+            const count = Math.min(C.MONSTER_REFUSE_DESTROY_COUNT, destroyableCount);
+            for (let i = 0; i < count; i++) {
+                if (window.GameCore.destroyRandomTile()) {
+                    destroyedAny = true;
+                }
+            }
+            if (!destroyedAny) {
                 if (window.UI) window.UI.showHint('怪物试图破坏但无可摧毁地块！', 'warning');
             }
         }
@@ -88,16 +91,20 @@
         }
 
         // 检查可销毁地块（排除指引者/阶梯后）
-        const destroyableCount = STATE.litTilesHistory.filter(t => {
-            const cell = STATE.grid[t.row][t.col];
-            return !cell.isStair && !cell.isGuide;
-        }).length;
-        const d1 = destroyableCount > 0 ? window.GameCore.destroyRandomTile() : null;
-        const d2 = destroyableCount > 1 ? window.GameCore.destroyRandomTile() : null;
-        if (!d1 && !d2) {
+        const destroyableCount = window.GameCore.getDestroyableTileCount();
+        const destroyCount = Math.min(C.MONSTER_ATTACK_DESTROY_COUNT, destroyableCount);
+        let destroyedAny = false;
+        let destroyedTotal = 0;
+        for (let i = 0; i < destroyCount; i++) {
+            if (window.GameCore.destroyRandomTile()) {
+                destroyedAny = true;
+                destroyedTotal++;
+            }
+        }
+        if (!destroyedAny) {
             if (window.UI) window.UI.showHint('怪物被击退，但所有点亮地块均为指引者或阶梯，无法破坏！', 'warning');
         } else {
-            const destroyedCount = (d1 ? 1 : 0) + (d2 ? 1 : 0);
+            const destroyedCount = destroyedTotal;
             if (window.UI) window.UI.showHint(`⚔️ 你攻击了怪物！怪物摧毁了${destroyedCount}块地块后逃窜，进入游击模式！`, 'danger');
         }
         if (!STATE.inGuerrillaMode) {

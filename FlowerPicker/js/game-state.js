@@ -11,8 +11,6 @@
         monsterAttackDestroyCount: 2,
         monsterAttackGrayTiles: false,
         initialFlowers: 6,
-        newTurfFlowersMinBase: 3,
-        newTurfFlowersMaxBase: 6,
         cellBaseSize: 80,
         cellGap: 5,
         canvasPadding: 30,
@@ -72,6 +70,7 @@
         btnMonsterRefuse: document.getElementById('btnMonsterRefuse'),
         btnMonsterAttack: document.getElementById('btnMonsterAttack'),
         btnWinOk: document.getElementById('btnWinOk'),
+        btnRestart: document.getElementById('btnRestart'),
         monsterStolenInfo: document.getElementById('monsterStolenInfo'),
         monsterButtons: document.getElementById('monsterButtons'),
         monsterTitle: document.getElementById('monsterTitle'),
@@ -99,7 +98,8 @@
         maniaBarFill: document.getElementById('maniaBarFill'),
         greedBarFill: document.getElementById('greedBarFill'),
         maniaDesc: document.getElementById('maniaDesc'),
-        greedDesc: document.getElementById('greedDesc')
+        greedDesc: document.getElementById('greedDesc'),
+        dicePanel: document.getElementById('dicePanel')
     };
 
     // ==================== 游戏状态 ====================
@@ -142,7 +142,16 @@
         // 指引者交互
         activeGuideForInteraction: null,
         // 替代胜利
-        alternativeWinChecked: false
+        alternativeWinChecked: false,
+        // 游击预告状态
+        guerrillaMarkedTiles: [],
+        guerrillaWarningActive: false,
+        // 骰子系统状态
+        diceResults: [],
+        diceRolled: false,
+        // 玩家当前位置
+        playerRow: 0,
+        playerCol: 0
     };
 
     // ==================== 工具函数 ====================

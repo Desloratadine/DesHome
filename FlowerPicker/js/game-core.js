@@ -132,9 +132,9 @@
         STATE.maniaLevel = Math.min((STATE.maniaLevel || 0) + amount, 3);
         if (window.UI) {
             if (STATE.maniaLevel >= 3) {
-                window.UI.showHint('💥 躁狂达到极限！你感到难以抑制的破坏欲！', 'danger');
+                window.UI.showHint('躁狂达到极限！你感到难以抑制的破坏欲！', 'danger');
             } else {
-                window.UI.showHint(`💢 躁狂等级 ${STATE.maniaLevel}/3`, 'warning');
+                window.UI.showHint(`躁狂等级 ${STATE.maniaLevel}/3`, 'warning');
             }
         }
     }
@@ -143,9 +143,9 @@
         STATE.greedLevel = Math.min((STATE.greedLevel || 0) + amount, 3);
         if (window.UI) {
             if (STATE.greedLevel >= 3) {
-                window.UI.showHint('💰 贪婪达到极限！背包满了会触发特殊事件！', 'danger');
+                window.UI.showHint('贪婪达到极限！背包满了会触发特殊事件！', 'danger');
             } else {
-                window.UI.showHint(`💰 贪婪等级 ${STATE.greedLevel}/3`, 'warning');
+                window.UI.showHint(`贪婪等级 ${STATE.greedLevel}/3`, 'warning');
             }
         }
     }
@@ -194,7 +194,7 @@
                 }
             }
         }
-        if (window.UI) window.UI.showHint('💰 贪婪发作！除指引者外的所有地块沦为贪婪之地！点击任何灰色地块将失去所有花朵！', 'danger');
+                if (window.UI) window.UI.showHint('贪婪发作！除指引者外的所有地块沦为贪婪之地！点击任何灰色地块将失去所有花朵！', 'danger');
         if (window.UI) window.UI.updateAll();
     }
 
@@ -221,7 +221,7 @@
 
         // 阶梯触发怪物
         if (cell.isStair) {
-            if (window.UI) window.UI.showHint('🎉 找到了通往下一层的阶梯！守关怪物出现了！', '');
+            if (window.UI) window.UI.showHint('找到了通往下一层的阶梯！守关怪物出现了！', '');
             finishGreedEvent();
             if (window.UI) window.UI.updateAll();
             if (window.Monster) window.Monster.triggerStair();
@@ -240,10 +240,10 @@
         // 武器箱
         if (cell.isWeapon && STATE.weaponLevel === 0) {
             STATE.weaponLevel = 1;
-            if (window.UI) window.UI.showHint('🗡️ 获得武器 Lv.1！现在可以攻击怪物了！', 'success');
+            if (window.UI) window.UI.showHint('获得武器 Lv.1！现在可以攻击怪物了！', 'success');
         }
 
-        if (window.UI) window.UI.showHint('你失去了所有花朵！但贪婪之地化为了可耕种的土地... 🌱', 'warning');
+        if (window.UI) window.UI.showHint('你失去了所有花朵！但贪婪之地化为了可耕种的土地...', 'warning');
         finishGreedEvent();
         if (window.UI) window.UI.updateAll();
         return true;
@@ -256,7 +256,7 @@
         if (!cell.lit || !cell.isGuide) return false;
 
         STATE.greedLevel = Math.max(0, STATE.greedLevel - 1);
-        if (window.UI) window.UI.showHint(`🙏 向指引者祈祷，贪婪等级降至 ${STATE.greedLevel}`, 'success');
+        if (window.UI) window.UI.showHint(`向指引者祈祷，贪婪等级降至 ${STATE.greedLevel}`, 'success');
         finishGreedEvent();
         if (window.UI) window.UI.updateAll();
         return true;
@@ -275,6 +275,8 @@
             }
         }
         STATE.greedSpecialTiles = [];
+        // 贪婪事件重置棋盘后，掷新骰为重建提供方向
+        if (window.DiceSystem) window.DiceSystem.rollAllDice();
     }
 
     // 检查替代胜利条件（游击模式下点亮所有非枯萎地块）
@@ -295,9 +297,9 @@
         if (allLit) {
             STATE.alternativeWinChecked = true;
             if (STATE.currentLayer < C.TOTAL_LAYERS) {
-                if (window.UI) window.UI.showHint('🌿 你点亮了所有地块！可以进入下一层（但不会获得碎片）', 'success');
+                if (window.UI) window.UI.showHint('你点亮了所有地块！可以进入下一层（但不会获得碎片）', 'success');
             } else {
-                if (window.UI) window.UI.showHint('🌿 你点亮了所有地块！', 'success');
+                if (window.UI) window.UI.showHint('你点亮了所有地块！', 'success');
             }
             return true;
         }
@@ -418,16 +420,25 @@
         STATE.guideLog = [];
         STATE.weaponLevel = 0;
         STATE.guerrillaDemandPercent = 0.5;
+        STATE.guerrillaMarkedTiles = [];
+        STATE.guerrillaWarningActive = false;
         resetHallucinations();
         STATE.alternativeWinChecked = false;
+        STATE.diceResults = [];
+        STATE.diceRolled = false;
         initGrid();
         STATE.backpack = [];
         STATE.treasureFound = false;
         STATE.monsterActive = false;
         STATE.particles = [];
         STATE.hoveredCell = null;
+        const centerRow = Math.floor(C.GRID_SIZE / 2);
+        const centerCol = Math.floor(C.GRID_SIZE / 2);
+        STATE.playerRow = centerRow;
+        STATE.playerCol = centerCol;
+        if (window.DiceSystem) window.DiceSystem.rollAllDice();
         if (window.UI) window.UI.updateAll();
-        if (window.UI) window.UI.showHint('点击已点亮的地块采集花朵。寻找通往下一层的阶梯和指引者！🧭', '');
+        if (window.UI) window.UI.showHint('点击已点亮的地块采集花朵。寻找通往下一层的阶梯和指引者', '');
     }
 
     // ==================== 采集花朵 ====================
@@ -449,7 +460,7 @@
 
         if (cell.flowers.length === 0) return false;
         if (STATE.backpack.length >= C.BACKPACK_CAPACITY) {
-            if (window.UI) window.UI.showHint('背包已满！消耗花朵点亮新草皮吧 🔔', 'warning');
+            if (window.UI) window.UI.showHint('背包已满！消耗花朵点亮新草皮吧', 'warning');
             if (window.UI) window.UI.shakeBackpack();
             return false;
         }
@@ -472,9 +483,9 @@
         if (cell.flowers.length === 0 && STATE.backpack.length < C.BACKPACK_CAPACITY) {
             if (window.UI) window.UI.showHint('这块草皮的花采完了~ 看看其他草皮吧', '');
         } else if (STATE.backpack.length >= C.BACKPACK_CAPACITY) {
-            if (window.UI) window.UI.showHint('背包满了！消耗花朵来点亮新草皮吧 🌱', 'warning');
+            if (window.UI) window.UI.showHint('背包满了！消耗花朵来点亮新草皮吧', 'warning');
         } else {
-            if (window.UI) window.UI.showHint('继续采集花朵吧~ 🌸', '');
+            if (window.UI) window.UI.showHint('继续采集花朵吧~', '');
         }
         return true;
     }
@@ -495,29 +506,25 @@
         STATE.backpack.splice(STATE.backpack.length - flowersToLight, flowersToLight);
 
         // 统计非指引者地块数量，用于上限判断
+        let diceJustRolled = false;
         const nonGuideLitTiles = STATE.litTilesHistory.filter(t => !STATE.grid[t.row][t.col].isGuide);
         if (nonGuideLitTiles.length >= C.MAX_LIT_TILES) {
-            // 找到最早的非指引者地块进行退化
-            let evictIdx = -1;
-            for (let i = 0; i < STATE.litTilesHistory.length; i++) {
-                const t = STATE.litTilesHistory[i];
-                if (!STATE.grid[t.row][t.col].isGuide) {
-                    evictIdx = i;
-                    break;
-                }
+            // 退化所有非指引者地块，只保留新点亮的地块
+            const evicted = STATE.litTilesHistory.filter(t => !STATE.grid[t.row][t.col].isGuide);
+            for (const tile of evicted) {
+                STATE.grid[tile.row][tile.col].lit = false;
+                STATE.grid[tile.row][tile.col].litIndex = -1;
+                STATE.grid[tile.row][tile.col].flowers = [];
             }
-            if (evictIdx >= 0) {
-                const oldestTile = STATE.litTilesHistory[evictIdx];
-                STATE.grid[oldestTile.row][oldestTile.col].lit = false;
-                STATE.grid[oldestTile.row][oldestTile.col].litIndex = -1;
-                STATE.grid[oldestTile.row][oldestTile.col].flowers = [];
-                STATE.litTilesHistory.splice(evictIdx, 1);
-                STATE.litCount--;
-                for (let i = 0; i < STATE.litTilesHistory.length; i++) {
-                    const tile = STATE.litTilesHistory[i];
-                    STATE.grid[tile.row][tile.col].litIndex = i;
-                }
-                if (window.UI) window.UI.showHint(`地块上限已达${C.MAX_LIT_TILES}！最早的点亮地块(${oldestTile.row},${oldestTile.col})已退化 🔄`, 'warning');
+            STATE.litTilesHistory = STATE.litTilesHistory.filter(t => STATE.grid[t.row][t.col].isGuide);
+            STATE.litCount = 0;
+            for (let i = 0; i < STATE.litTilesHistory.length; i++) {
+                STATE.grid[STATE.litTilesHistory[i].row][STATE.litTilesHistory[i].col].litIndex = i;
+            }
+            if (window.UI) window.UI.showHint(`地块已满！所有旧地块退化，掷骰决定方向！`, 'warning');
+            if (window.DiceSystem) {
+                window.DiceSystem.rollAllDice();
+                diceJustRolled = true;
             }
         }
 
@@ -532,9 +539,21 @@
         const flowerCount = getNewTileFlowersMin() + Math.floor(Math.random() * (getNewTileFlowersMax() - getNewTileFlowersMin() + 1));
         generateFlowersForCell(row, col, flowerCount);
 
+        // 骰子效果触发：检测新点亮地块的方向是否与已有的骰子指向一致
+        // 退化时刚掷的骰子留给下一次点亮操作，不消耗在当前地块
+        if (STATE.diceRolled && !diceJustRolled && window.DiceSystem) {
+            window.DiceSystem.triggerOnLight(row, col);
+        }
+
+        // 更新玩家位置（非指引者地块）
+        if (!STATE.grid[row][col].isGuide) {
+            STATE.playerRow = row;
+            STATE.playerCol = col;
+        }
+
         // 阶梯触发怪物
         if (STATE.grid[row][col].isStair) {
-            if (window.UI) window.UI.showHint(`🎉 找到了通往下一层的阶梯！守关怪物出现了！ 👾`, '');
+            if (window.UI) window.UI.showHint(`🎉 找到了通往下一层的阶梯！守关怪物出现了！`, '');
             if (window.Monster) window.Monster.triggerStair();
             return true;
         }
@@ -554,16 +573,21 @@
         // 武器箱
         if (STATE.grid[row][col].isWeapon && STATE.weaponLevel === 0) {
             STATE.weaponLevel = 1;
-            if (window.UI) window.UI.showHint('🗡️ 获得武器 Lv.1！现在可以攻击怪物了！', 'success');
+            if (window.UI) window.UI.showHint('获得武器 Lv.1！现在可以攻击怪物了！', 'success');
         }
 
         // 指引者地块不触发游击和贪婪计数
         if (!STATE.grid[row][col].isGuide) {
             // 游击模式检查
             if (STATE.inGuerrillaMode) {
-                STATE.guerrillaTriggerCount++;
-                if (STATE.guerrillaTriggerCount >= C.MONSTER_INTERVAL) {
-                    if (window.Monster) window.Monster.triggerGuerrilla();
+                if (STATE.guerrillaWarningActive) {
+                    // 预告激活中 → 点亮即触发突袭摧毁
+                    if (window.Monster) window.Monster.executeGuerrillaStrike();
+                } else {
+                    STATE.guerrillaTriggerCount++;
+                    if (STATE.guerrillaTriggerCount >= C.MONSTER_INTERVAL) {
+                        if (window.Monster) window.Monster.markGuerrillaTiles();
+                    }
                 }
             }
 
@@ -599,12 +623,17 @@
         const bounds = getCellBounds(row, col);
         window.Particles.spawn(bounds.x + bounds.w / 2, bounds.y + bounds.h / 2, '#000', 12);
         if (window.UI) window.UI.updateAll();
-        if (window.UI) window.UI.showHint(`枯萎地块恢复！上面有 ${flowerCount} 朵花~ 🌼`, '');
+        if (window.UI) window.UI.showHint(`枯萎地块恢复！上面有 ${flowerCount} 朵花~`, '');
         return true;
     }
 
     // ==================== 层数推进 ====================
     function advanceToNextLayer() {
+        STATE.guerrillaMarkedTiles = [];
+        STATE.guerrillaWarningActive = false;
+        STATE.diceResults = [];
+        STATE.diceRolled = false;
+        if (window.DiceSystem) window.DiceSystem.updateDiceUI();
         if (STATE.currentLayer < C.TOTAL_LAYERS) {
             STATE.treasureFragments++;
             if (window.UI) window.UI.showHint(`🎊 进入第${STATE.currentLayer + 1}层！获得宝藏碎片 ${STATE.treasureFragments}/3`, '');
@@ -615,6 +644,11 @@
             }
             STATE.alternativeWinChecked = false;
             initGrid();
+            const nextCenterRow = Math.floor(C.GRID_SIZE / 2);
+            const nextCenterCol = Math.floor(C.GRID_SIZE / 2);
+            STATE.playerRow = nextCenterRow;
+            STATE.playerCol = nextCenterCol;
+            if (window.DiceSystem) window.DiceSystem.rollAllDice();
             if (window.UI) window.UI.updateAll();
             if (window.UI) window.UI.showHint(`进入第${STATE.currentLayer}层：${getLayerTheme()}，点亮需要${getFlowersToLight()}朵花`, '');
         } else {

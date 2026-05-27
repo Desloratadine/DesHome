@@ -31,6 +31,11 @@
         } else if (STATE.greedActive && !STATE.greedResolved && gridCell.greedSpecial) {
             window.GameCore.collectFlower(row, col);
         } else if (gridCell.lit) {
+            // 游击预告地块：点击切换保护状态
+            if (STATE.guerrillaWarningActive && window.Monster.isMarkedTile(row, col)) {
+                window.Monster.selectProtectedTile(row, col);
+                return;
+            }
             // 优先处理指引者交互（未揭示的指引者）
             if (gridCell.isGuide && !STATE.greedActive) {
                 const guideInfo = STATE.guideLocations.find(g => g.row === row && g.col === col);
@@ -47,7 +52,7 @@
             if (gridCell.flowers.length > 0 || gridCell.greedSpecial) {
                 window.GameCore.collectFlower(row, col);
             } else if (window.GameCore.isAdjacentToLit(row, col) === false && gridCell.lit) {
-                window.UI.showHint('这块地块没有花了~ 扩展新地块吧 🌱', '');
+                window.UI.showHint('这里的花朵已经枯萎', '');
             }
         } else if (window.GameCore.isAdjacentToLit(row, col)) {
             const flowersToLight = window.GameCore.getFlowersToLight();
@@ -96,6 +101,15 @@
             window.GameCore.resetGame();
             window.CanvasRenderer.resize();
         }
+        if (e.key === 'r' && e.shiftKey && DOM.winOverlay.style.display !== 'flex') {
+            if (window.confirm('确定重新开始？当前进度将丢失。')) {
+                DOM.monsterOverlay.style.display = 'none';
+                DOM.winOverlay.style.display = 'none';
+                if (window.GuideSystem) window.GuideSystem.closeGuideInteraction();
+                window.GameCore.resetGame();
+                window.CanvasRenderer.resize();
+            }
+        }
     }
 
     function handleResize() {
@@ -117,6 +131,15 @@
             DOM.winOverlay.style.display = 'none';
             window.GameCore.resetGame();
             window.CanvasRenderer.resize();
+        });
+        DOM.btnRestart.addEventListener('click', function() {
+            if (window.confirm('确定重新开始？当前进度将丢失。')) {
+                DOM.monsterOverlay.style.display = 'none';
+                DOM.winOverlay.style.display = 'none';
+                if (window.GuideSystem) window.GuideSystem.closeGuideInteraction();
+                window.GameCore.resetGame();
+                window.CanvasRenderer.resize();
+            }
         });
         document.addEventListener('keydown', handleKeyDown);
         window.addEventListener('resize', handleResize);

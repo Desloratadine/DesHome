@@ -52,19 +52,18 @@
         ctx.save();
 
         if (cell.withered) {
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#000';
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, radius);
             ctx.fill();
-            ctx.strokeStyle = '#000';
+            ctx.strokeStyle = '#fff';
             ctx.lineWidth = 1.5;
             ctx.setLineDash([4, 3]);
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, radius);
             ctx.stroke();
             ctx.setLineDash([]);
-            // X 图案
-            ctx.strokeStyle = '#000';
+            ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(x + 8, y + 8);
@@ -72,33 +71,32 @@
             ctx.moveTo(x + w - 8, y + 8);
             ctx.lineTo(x + 8, y + h - 8);
             ctx.stroke();
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#fff';
             ctx.font = 'bold 14px "Courier New",monospace';
             ctx.textAlign = 'center';
             ctx.fillText('x', x + w / 2, y + h / 2 + 5);
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#fff';
             ctx.font = '9px "Courier New",monospace';
             ctx.textAlign = 'center';
             ctx.fillText(`${window.GameCore.getFlowersToLight()}🌸恢复`, x + w / 2, y + h - 6);
         } else if (cell.greedSpecial) {
-            // 贪婪之地：白底 + 脉冲黑色虚线边框
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#000';
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, radius);
             ctx.fill();
             const pulse = 0.3 + 0.7 * Math.sin(Date.now() / 600);
-            ctx.strokeStyle = `rgba(0,0,0,${pulse})`;
+            ctx.strokeStyle = `rgba(255,255,255,${pulse})`;
             ctx.lineWidth = 2;
             ctx.setLineDash([4, 4]);
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, radius);
             ctx.stroke();
             ctx.setLineDash([]);
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#fff';
             ctx.font = 'bold 16px "Courier New",monospace';
             ctx.textAlign = 'center';
             ctx.fillText('$', x + w / 2, y + h / 2 + 6);
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#fff';
             ctx.font = '9px "Courier New",monospace';
             ctx.textAlign = 'center';
             ctx.fillText('贪婪之地', x + w / 2, y + h - 6);
@@ -107,39 +105,36 @@
             if (cell.isGuide) {
                 const guideInfo = STATE.guideLocations.find(g => g.row === row && g.col === col);
                 const isUsed = guideInfo && guideInfo.revealed;
-                ctx.fillStyle = '#000';
+                ctx.fillStyle = '#fff';
                 ctx.beginPath();
                 ctx.roundRect(x, y, w, h, radius);
                 ctx.fill();
-                ctx.strokeStyle = '#fff';
+                ctx.strokeStyle = '#000';
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
                 ctx.roundRect(x, y, w, h, radius);
                 ctx.stroke();
-                // 内虚线框
-                ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                ctx.strokeStyle = 'rgba(0,0,0,0.4)';
                 ctx.lineWidth = 1;
                 ctx.setLineDash([3, 3]);
                 ctx.beginPath();
                 ctx.roundRect(x + 3, y + 3, w - 6, h - 6, radius - 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
-                // 悬停效果
                 if (isHovered) {
-                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
                     ctx.beginPath();
                     ctx.roundRect(x, y, w, h, radius);
                     ctx.fill();
-                    ctx.strokeStyle = '#fff';
+                    ctx.strokeStyle = '#000';
                     ctx.lineWidth = 3;
                     ctx.beginPath();
                     ctx.roundRect(x, y, w, h, radius);
                     ctx.stroke();
                 }
-                // 花朵
                 for (const flower of cell.flowers) {
                     ctx.save();
-                    ctx.strokeStyle = '#fff';
+                    ctx.strokeStyle = '#000';
                     ctx.lineWidth = 1;
                     const fx = x + flower.x;
                     const fy = y + flower.y;
@@ -151,13 +146,13 @@
                         ctx.arc(px, py, 3, 0, Math.PI * 2);
                         ctx.stroke();
                     }
-                    ctx.fillStyle = '#fff';
+                    ctx.fillStyle = '#000';
                     ctx.beginPath();
                     ctx.arc(fx, fy, 1.5, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.restore();
                 }
-                ctx.fillStyle = '#fff';
+                ctx.fillStyle = '#000';
                 ctx.font = 'bold 14px "Courier New",monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText(isUsed ? 'OK' : '?', x + w / 2, y + 22);
@@ -217,47 +212,97 @@
                     ctx.textAlign = 'center';
                     ctx.fillText(hasWeapon ? 'DONE' : 'SWORD', x + w / 2, y + 22);
                 }
+
+                const maxTiles = C.MAX_LIT_TILES;
+                let nonGuideRank = 0;
+                for (let i = 0; i < STATE.litTilesHistory.length; i++) {
+                    const t = STATE.litTilesHistory[i];
+                    if (!STATE.grid[t.row][t.col].isGuide) {
+                        if (t.row === row && t.col === col) break;
+                        nonGuideRank++;
+                    }
+                }
+                const ageFactor = Math.min(nonGuideRank, maxTiles - 1) / (maxTiles - 1);
+                const darkness = (1 - ageFactor) * 0.35;
+                ctx.fillStyle = `rgba(0,0,0,${darkness})`;
+                ctx.beginPath();
+                ctx.roundRect(x, y, w, h, radius);
+                ctx.fill();
+
+                if (STATE.guerrillaWarningActive && window.Monster.isMarkedTile(row, col)) {
+                    const markedTileInfo = STATE.guerrillaMarkedTiles.find(t => t.row === row && t.col === col);
+                    const isProtected = markedTileInfo && markedTileInfo.protected;
+                    const threatPulse = 0.3 + 0.7 * Math.sin(Date.now() / 400);
+                    if (isProtected) {
+                        ctx.strokeStyle = `rgba(0,200,0,${threatPulse})`;
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([]);
+                        ctx.beginPath();
+                        ctx.roundRect(x, y, w, h, radius);
+                        ctx.stroke();
+                        ctx.fillStyle = `rgba(0,200,0,${threatPulse * 0.15})`;
+                        ctx.beginPath();
+                        ctx.roundRect(x, y, w, h, radius);
+                        ctx.fill();
+                        ctx.fillStyle = '#fff';
+                        ctx.font = '14px "Courier New",monospace';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('🛡', x + w / 2, y + h / 2 + 5);
+                    } else {
+                        ctx.strokeStyle = `rgba(200,0,0,${threatPulse})`;
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([6, 4]);
+                        ctx.beginPath();
+                        ctx.roundRect(x, y, w, h, radius);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.fillStyle = `rgba(200,0,0,${threatPulse * 0.25})`;
+                        ctx.beginPath();
+                        ctx.roundRect(x, y, w, h, radius);
+                        ctx.fill();
+                    }
+                }
             }
         } else {
             const isExpandable = window.GameCore.isAdjacentToLit(row, col);
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#000';
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, radius);
             ctx.fill();
             if (isExpandable) {
                 const pulse = 0.2 + 0.5 * Math.sin(Date.now() / 800);
-                ctx.fillStyle = `rgba(0,0,0,${pulse})`;
+                ctx.fillStyle = `rgba(255,255,255,${pulse})`;
                 ctx.beginPath();
                 ctx.roundRect(x, y, w, h, radius);
                 ctx.fill();
-                ctx.strokeStyle = '#000';
+                ctx.strokeStyle = '#fff';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([]);
                 ctx.beginPath();
                 ctx.roundRect(x, y, w, h, radius);
                 ctx.stroke();
-                ctx.fillStyle = '#fff';
+                ctx.fillStyle = '#000';
                 ctx.font = '18px "Courier New",monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText('+', x + w / 2, y + h / 2 + 7);
                 if (isHovered && STATE.backpack.length >= window.GameCore.getFlowersToLight()) {
-                    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
                     ctx.beginPath();
                     ctx.roundRect(x, y, w, h, radius);
                     ctx.fill();
-                    ctx.strokeStyle = '#000';
+                    ctx.strokeStyle = '#fff';
                     ctx.lineWidth = 3;
                     ctx.setLineDash([]);
                     ctx.beginPath();
                     ctx.roundRect(x, y, w, h, radius);
                     ctx.stroke();
                 }
-                ctx.fillStyle = '#000';
+                ctx.fillStyle = '#fff';
                 ctx.font = '9px "Courier New",monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText(`${window.GameCore.getFlowersToLight()}`, x + w / 2, y + h - 6);
             } else {
-                ctx.strokeStyle = '#000';
+                ctx.strokeStyle = '#fff';
                 ctx.lineWidth = 1;
                 ctx.setLineDash([3, 4]);
                 ctx.beginPath();
@@ -266,13 +311,13 @@
                 ctx.setLineDash([]);
             }
             if (cell.isGuide) {
-                ctx.fillStyle = '#000';
+                ctx.fillStyle = '#fff';
                 ctx.font = 'bold 12px "Courier New",monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText('?', x + w / 2, y + 20);
             }
             if (cell.isWeapon) {
-                ctx.fillStyle = '#000';
+                ctx.fillStyle = '#fff';
                 ctx.font = 'bold 10px "Courier New",monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText('WPN', x + w / 2, y + 20);
@@ -287,10 +332,10 @@
         if (STATE.canvasCSSWidth === 0 || STATE.canvasCSSHeight === 0) return;
 
         const ctx = DOM.ctx;
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, STATE.canvasCSSWidth, STATE.canvasCSSHeight);
 
-        ctx.fillStyle = 'rgba(0,0,0,0.03)';
+        ctx.fillStyle = 'rgba(255,255,255,0.04)';
         for (let i = 0; i < 20; i++) {
             const seed = i * 137.5;
             const dx = (Math.sin(seed) * 0.6 + 0.5) * STATE.canvasCSSWidth;
@@ -313,7 +358,7 @@
         if (STATE.grid[Math.floor(C.GRID_SIZE / 2)][Math.floor(C.GRID_SIZE / 2)].lit && STATE.litCount === 1) {
             const cx = centerBounds.x + centerBounds.w / 2;
             const cy = centerBounds.y - 10;
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#fff';
             ctx.font = 'bold 11px "Courier New",monospace';
             ctx.textAlign = 'center';
             const bounce = Math.sin(Date.now() / 1200) * 3;

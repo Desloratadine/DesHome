@@ -20,6 +20,7 @@
                 <span class="progress-number" id="progressNumber">当前: 1/6 | 碎片: 0/3</span>
                 <div class="progress-dots" id="progressDots"></div>
             </div>
+            <button class="btn btn-restart" id="btnRestart">↺ 重新开始</button>
         </div>
 
         <!-- 主区域：Canvas + 侧边面板 -->
@@ -31,9 +32,9 @@
             <div class="side-panel">
                 <!-- 幻觉状态面板 -->
                 <div class="status-panel" id="statusPanel">
-                    <div class="status-header">🧠 精神状态</div>
+                    <div class="status-header">精神状态</div>
                     <div class="status-item" id="maniaStatus">
-                        <span class="status-label">💢 躁狂</span>
+                        <span class="status-label">躁狂</span>
                         <span class="status-level" id="maniaLevelText">0/3</span>
                         <div class="status-bar">
                             <div class="status-bar-fill mania-fill" id="maniaBarFill" style="width:0%"></div>
@@ -41,7 +42,7 @@
                         <div class="status-desc" id="maniaDesc">情绪稳定。升级武器或攻击怪物会积累躁狂。</div>
                     </div>
                     <div class="status-item" id="greedStatus">
-                        <span class="status-label">💰 贪婪</span>
+                        <span class="status-label"> 贪婪</span>
                         <span class="status-level" id="greedLevelText">0/3</span>
                         <div class="status-bar">
                             <div class="status-bar-fill greed-fill" id="greedBarFill" style="width:0%"></div>
@@ -53,44 +54,47 @@
                 <!-- 指引者交互容器（内嵌） -->
                 <div class="guide-interaction-container" id="guideInteractionContainer">
                     <div class="guide-interaction-header">
-                        <span class="guide-interaction-icon">🧭</span>
                         <span id="guideInteractionTitle">指引者</span>
                         <span class="guide-interaction-close" id="btnGuideClose">✕</span>
                     </div>
                     <div class="guide-interaction-body" id="guideInteractionDesc">你的灯光照亮了一尊雕像。你想做什么？</div>
                     <div class="guide-interaction-buttons">
-                        <button class="btn btn-guide-pray" id="btnGuidePray">🙏 祈求指引</button>
-                        <button class="btn btn-guide-attack" id="btnGuideAttack" style="display:none;">⚔️ 攻击雕像</button>
-                        <button class="btn btn-guide-pray-greed" id="btnGuidePrayGreed" style="display:none;">🙌 向雕像祈祷</button>
+                        <button class="btn btn-guide-pray" id="btnGuidePray">祈求指引</button>
+                        <button class="btn btn-guide-attack" id="btnGuideAttack" style="display:none;">攻击雕像</button>
+                        <button class="btn btn-guide-pray-greed" id="btnGuidePrayGreed" style="display:none;">向雕像祈祷</button>
                     </div>
                 </div>
 
                 <!-- 指引者日志 -->
                 <div class="guide-log-panel">
                     <div class="guide-log-header">
-                        <span class="guide-log-icon">📜</span>
                         <span class="guide-log-title">指引者提示</span>
                     </div>
                     <div class="guide-log-content" id="guideLogContent">
                         <div class="guide-log-empty">点亮指引者地块后获得坐标信息</div>
                     </div>
                 </div>
+
+                <!-- 骰子面板 -->
+                <div class="dice-panel" id="dicePanel">
+                    <div class="dice-panel-header">🎲 动物骰子</div>
+                </div>
             </div>
         </div>
 
         <!-- 背包与武器 -->
         <div class="backpack-panel">
-            <span class="backpack-label">🎒 背包</span>
+            <span class="backpack-label">背包</span>
             <div class="backpack-slots" id="backpackSlots"></div>
             <span class="backpack-count" id="backpackCount">0/6</span>
         </div>
         <div class="weapon-panel" id="weaponPanel" style="display:none;">
-            <span class="weapon-label">🗡️ 武器 Lv.<span id="weaponLevel">0</span></span>
+            <span class="weapon-label">武器 Lv.<span id="weaponLevel">0</span></span>
             <button class="btn btn-weapon-upgrade" id="btnWeaponUpgrade">⬆ 升级</button>
         </div>
 
         <!-- 提示 -->
-        <div class="hint-text" id="hintText">点击已点亮的地块采集花朵 🌸</div>
+        <div class="hint-text" id="hintText">点击已点亮的地块采集花朵🌸</div>
     </div>
 
     <!-- 怪物弹窗（隐藏） -->
@@ -101,9 +105,9 @@
             <p id="monsterDesc">贪婪的怪物索要你的花朵作为通行代价！<br>你可以选择支付或拒绝，但拒绝会带来后果...</p>
             <p id="monsterStolenInfo" style="font-weight:700;min-height:60px;"></p>
             <div class="monster-buttons" id="monsterButtons">
-                <button class="btn btn-monster-pay" id="btnMonsterPay">支付代价</button>
-                <button class="btn btn-monster-refuse" id="btnMonsterRefuse">拒绝支付</button>
-                <button class="btn btn-monster-attack" id="btnMonsterAttack" style="display:none;">⚔️ 攻击怪物</button>
+                <button class="btn btn-monster-pay" id="btnMonsterPay">*支付代价*</button>
+                <button class="btn btn-monster-refuse" id="btnMonsterRefuse">*匆忙逃跑*</button>
+                <button class="btn btn-monster-attack" id="btnMonsterAttack" style="display:none;">*攻击怪物*</button>
             </div>
         </div>
     </div>
@@ -113,9 +117,9 @@
         <div class="popup win-popup">
             <span class="popup-emoji" id="winEmoji">🎉</span>
             <h2 id="winTitle">宝藏找到了！</h2>
-            <p id="winMessage">你发现了隐藏在地下的神秘宝藏！<br>穿越有限的地块，在怪物威胁下找到了财富 💎✨</p>
+            <p id="winMessage">你发现了森林深处的秘密宝藏！<br>穿越有限的地块，在怪物威胁下找到了财富 💎✨</p>
             <p id="winSubtitle">真正的冒险者懂得在限制中寻找机会！</p>
-            <button class="btn btn-win" id="btnWinOk">🌿 再来一局</button>
+            <button class="btn btn-win" id="btnWinOk">重启探险</button>
         </div>
     </div>
 
@@ -128,6 +132,7 @@
     <script src="js/monster.js"></script>
     <script src="js/ui-renderer.js"></script>
     <script src="js/canvas-renderer.js"></script>
+    <script src="js/dice-system.js"></script>
     <script src="js/event-handler.js"></script>
 </body>
 </html>

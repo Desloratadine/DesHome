@@ -7,6 +7,7 @@
         if (window.GuideSystem) window.GuideSystem.updateGuideLogUI();
         updateWeaponUI();
         updateStatusPanel();
+        if (window.DiceSystem) window.DiceSystem.updateDiceUI();
     }
 
     function updateWeaponUI() {

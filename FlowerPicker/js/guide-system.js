@@ -20,8 +20,8 @@
     function showGuideInteractionContainer(guideInfo) {
         const { row, col } = guideInfo;
 
-        DOM.guideInteractionTitle.textContent = `🧭 指引者 (${row},${col})`;
-        DOM.guideInteractionDesc.textContent = '你的灯光照亮了一尊雕像。你想做什么？';
+        DOM.guideInteractionTitle.textContent = `指引者 (${row},${col})`;
+        DOM.guideInteractionDesc.textContent = '你的灯光照亮了一尊雕像。';
 
         // 选项A：祈求指引（默认可用）
         DOM.btnGuidePray.style.display = '';
@@ -32,7 +32,7 @@
         // 选项B：攻击雕像（躁狂满级时可用）
         if (STATE.maniaLevel >= 3) {
             DOM.btnGuideAttack.style.display = '';
-            DOM.btnGuideAttack.textContent = `⚔️ 攻击雕像 (躁狂 ${STATE.maniaLevel}/3)`;
+            DOM.btnGuideAttack.textContent = `*攻击雕像 (躁狂 ${STATE.maniaLevel}/3)*`;
             DOM.btnGuideAttack.onclick = function() {
                 handleGuideAttack(guideInfo);
             };
@@ -43,7 +43,7 @@
         // 选项C：向雕像祈祷（贪婪时可用）
         if (STATE.greedLevel > 0) {
             DOM.btnGuidePrayGreed.style.display = '';
-            DOM.btnGuidePrayGreed.textContent = `🙌 向雕像祈祷 (贪婪 ${STATE.greedLevel}/3)`;
+            DOM.btnGuidePrayGreed.textContent = `*向雕像祈祷 (贪婪 ${STATE.greedLevel}/3)*`;
             DOM.btnGuidePrayGreed.onclick = function() {
                 handleGuidePrayGreed(guideInfo);
             };
@@ -136,7 +136,7 @@
 
         guideInfo.revealed = true;
         addGuideLog(`位于 (${guideInfo.row},${guideInfo.col}) 的指引者说：${hintText}`, 'hint');
-        if (window.UI) window.UI.showHint(`🧭 指引者：${hintText}`, '');
+        if (window.UI) window.UI.showHint(`指引者：${hintText}`, '');
         if (window.UI) window.UI.updateAll();
         closeGuideInteraction();
     }

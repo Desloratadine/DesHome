@@ -5,17 +5,15 @@ window.GAME_CONFIG = {
     "backpackCapacity": 6,
     "maxLitTiles": 4,
     "monsterInterval": 3,
-    // 怪物摧毁地块后是否允许用花朵恢复（false=直接禁用交互）
+    // 怪物摧毁地块后是否允许用花朵恢复
     "allowWitheredRestore": false,
     // 怪物一次拒绝时摧毁的地块数目
-    "monsterRefuseDestroyCount": 2,
+    "monsterRefuseDestroyCount": 1,
     // 怪物一次攻击时摧毁的地块数目
     "monsterAttackDestroyCount": 1,
     // 怪物的攻击范围是否包括灰色地块
     "monsterAttackGrayTiles": false,
     "initialFlowers": 3,
-    "newTurfFlowersMinBase": 5,
-    "newTurfFlowersMaxBase": 6,
     "cellBaseSize": 80,
     "cellGap": 5,
     "canvasPadding": 30,

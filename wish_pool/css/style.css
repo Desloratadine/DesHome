@@ -1,0 +1,86 @@
+/* ============================================
+   Pinball Game - Styles
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(145deg, #e6f2ff, #ffffff);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.game-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.game-title {
+    color: #0d47a1;
+    font-size: 1.4em;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.game-container {
+    position: relative;
+    border: 3px solid #90caf9;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(30, 136, 229, 0.15);
+    background: #ffffff;
+    overflow: hidden;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 560px;
+}
+
+.game-footer {
+    color: #64b5f6;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+.game-footer kbd {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: inherit;
+    font-size: 0.9em;
+    color: #0d47a1;
+}
+
+/* Responsive */
+@media (max-width: 840px) {
+    body {
+        padding: 10px;
+    }
+
+    .game-title {
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 0.95em;
+    }
+
+    .game-footer {
+        font-size: 0.75em;
+    }
+}

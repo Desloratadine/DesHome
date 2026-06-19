@@ -1,0 +1,526 @@
+/* ============================================
+   TRPG Dice System - 1-bit Black & White Style
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Consolas", "Courier New", "Microsoft YaHei", monospace;
+    background: #000;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #fff;
+}
+
+.app-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    border: 2px solid #fff;
+    padding: 20px 24px;
+}
+
+/* ===== Header ===== */
+
+.app-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #fff;
+}
+
+.app-title {
+    font-size: 1.4em;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.app-subtitle {
+    font-size: 0.7em;
+    color: #888;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+
+/* ===== Layout ===== */
+
+.app-main {
+    display: flex;
+    gap: 20px;
+}
+
+.roll-area {
+    width: 360px;
+    flex-shrink: 0;
+}
+
+.anko-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== Input Group ===== */
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.7em;
+    color: #888;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.dice-input {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.95em;
+    font-family: "Consolas", "Courier New", monospace;
+    background: #000;
+    border: 2px solid #fff;
+    color: #fff;
+    outline: none;
+}
+
+.dice-input:focus {
+    background: #fff;
+    color: #000;
+}
+
+.dice-input::placeholder {
+    color: #555;
+}
+
+/* ===== Buttons ===== */
+
+.btn {
+    cursor: pointer;
+    border: 2px solid #fff;
+    background: #000;
+    color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
+    font-weight: 700;
+    padding: 6px 14px;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.btn:hover {
+    background: #fff;
+    color: #000;
+}
+
+.btn:active {
+    opacity: 0.7;
+}
+
+.btn-primary {
+    padding: 8px 20px;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.btn-sm {
+    padding: 3px 7px;
+    font-size: 0.7em;
+    border-width: 1px;
+    white-space: nowrap;
+}
+
+/* ===== Quick Rolls ===== */
+
+.quick-rolls {
+    margin-bottom: 16px;
+}
+
+.quick-label {
+    font-size: 0.7em;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.dice-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.dice-buttons + .dice-buttons {
+    margin-top: 5px;
+}
+
+.dice-btn {
+    padding: 4px 10px;
+    font-size: 0.75em;
+    min-width: 42px;
+    text-align: center;
+}
+
+.adv-btn {
+    border-style: dashed;
+}
+
+.dis-btn {
+    border-style: dashed;
+}
+
+/* ===== Result Area ===== */
+
+.result-area {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    border: 2px solid #fff;
+    padding: 14px;
+    min-height: 90px;
+    margin-bottom: 16px;
+}
+
+.dice-animation {
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+}
+
+.dice-face {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+.dice-face.rolling {
+    animation: diceTumble 0.35s steps(4);
+}
+
+@keyframes diceTumble {
+    0%   { transform: scale(1); opacity: 1; }
+    25%  { transform: scale(1.2); opacity: 0; }
+    50%  { transform: scale(0.8); opacity: 0; }
+    75%  { transform: scale(1.1); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.result-detail {
+    flex: 1;
+    min-width: 0;
+}
+
+.result-total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.total-label {
+    font-size: 0.65em;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.total-value {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+.result-breakdown {
+    font-size: 0.8em;
+    color: #fff;
+    margin-bottom: 2px;
+    font-family: "Consolas", "Courier New", monospace;
+    word-break: break-all;
+}
+
+.result-formula {
+    font-size: 0.7em;
+    color: #888;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+/* ===== History ===== */
+
+.history-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #fff;
+}
+
+.history-title {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.history-list {
+    flex: 1;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: #000;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: #fff;
+}
+
+.history-empty {
+    color: #555;
+    font-size: 0.75em;
+    text-align: center;
+    padding: 16px 0;
+}
+
+.history-item {
+    padding: 6px 8px;
+    margin-bottom: 3px;
+    border: 1px solid #fff;
+}
+
+.history-item:hover {
+    background: #fff;
+    color: #000;
+}
+
+.history-item:hover .history-item-formula,
+.history-item:hover .history-item-detail,
+.history-item:hover .history-item-time,
+.history-item:hover .history-item-total {
+    color: #000;
+}
+
+.history-item:last-child {
+    margin-bottom: 0;
+}
+
+.history-item-formula {
+    font-size: 0.7em;
+    color: #888;
+    font-family: "Consolas", "Courier New", monospace;
+    margin-bottom: 1px;
+}
+
+.history-item-result {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.history-item-total {
+    font-size: 1em;
+    font-weight: 700;
+    color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+.history-item-detail {
+    font-size: 0.7em;
+    color: #fff;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+.history-item-time {
+    font-size: 0.6em;
+    color: #555;
+    margin-top: 2px;
+}
+
+/* ===== Anko Text Editor ===== */
+
+.anko-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #fff;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.anko-label {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.anko-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.anko-text {
+    flex: 1;
+    width: 100%;
+    min-height: 440px;
+    padding: 12px 14px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+    background: #000;
+    border: 2px solid #fff;
+    color: #fff;
+    resize: vertical;
+    outline: none;
+}
+
+.anko-text:focus {
+    background: #000;
+    border-color: #fff;
+}
+
+.anko-text::placeholder {
+    color: #555;
+}
+
+.anko-status {
+    font-size: 0.65em;
+    color: #555;
+    margin-top: 4px;
+    min-height: 1.2em;
+}
+
+.file-input {
+    display: none;
+}
+
+/* ===== Anko: Color Toggle & Separator ===== */
+
+.anko-text.white-mode {
+    background: #fff;
+    color: #000;
+}
+
+.anko-text.white-mode:focus {
+    background: #fff;
+}
+
+.anko-text.white-mode::placeholder {
+    color: #aaa;
+}
+
+.btn-toggle-on {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+}
+
+.btn-toggle-on:hover {
+    background: #000;
+    color: #fff;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 900px) {
+    .app-main {
+        flex-direction: column;
+    }
+
+    .roll-area {
+        width: 100%;
+    }
+
+    .anko-text {
+        min-height: 280px;
+    }
+
+    .history-list {
+        max-height: 140px;
+    }
+
+    .result-area {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dice-animation {
+        width: 64px;
+        height: 64px;
+    }
+
+    .dice-face {
+        font-size: 1.4em;
+    }
+
+    .result-total {
+        justify-content: center;
+    }
+
+    .result-breakdown,
+    .result-formula {
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-wrapper {
+        padding: 10px 12px;
+    }
+
+    .app-title {
+        font-size: 1em;
+    }
+
+    .anko-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dice-input {
+        font-size: 0.85em;
+        padding: 6px 10px;
+    }
+
+    .btn-primary {
+        padding: 6px 14px;
+    }
+}

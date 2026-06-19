@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹球游戏</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <h1 class="game-title">⊹ 弹球游戏 ⊹</h1>
+
+        <div class="game-container">
+            <canvas id="gameCanvas">您的浏览器不支持Canvas</canvas>
+        </div>
+
+        <p class="game-footer">
+            <kbd>鼠标移动</kbd> 控制球拍 &nbsp;·&nbsp; <kbd>Space</kbd> 暂停
+        </p>
+    </div>
+
+    <!-- roundRect Polyfill for older browsers -->
+    <script>
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                if (typeof r === 'number') r = [r];
+                var tl = r[0] || 0, tr = r[1] || tl, br = r[2] || tr, bl = r[3] || br;
+                this.moveTo(x + tl, y);
+                this.lineTo(x + w - tr, y);
+                this.quadraticCurveTo(x + w, y, x + w, y + tr);
+                this.lineTo(x + w, y + h - br);
+                this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+                this.lineTo(x + bl, y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - bl);
+                this.lineTo(x, y + tl);
+                this.quadraticCurveTo(x, y, x + tl, y);
+                this.closePath();
+            };
+        }
+    </script>
+
+    <!-- Scripts loaded in dependency order -->
+    <script src="config-data.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/physics-engine.js"></script>
+    <script src="js/paddle.js"></script>
+    <script src="js/ball.js"></script>
+    <script src="js/ui-renderer.js"></script>
+    <script src="js/input-handler.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/game-core.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>

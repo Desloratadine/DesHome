@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRPG DICE</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <!-- Header -->
+
+        <main class="app-main">
+            <!-- Left: Dice Roller -->
+            <section class="roll-area">
+                <div class="input-group">
+                    <label class="input-label" for="diceInput">骰子表达式</label>
+                    <div class="input-row">
+                        <input type="text" id="diceInput" class="dice-input" placeholder="2d6+3, 1d20, 3d10-2" value="1d20" spellcheck="false">
+                        <button id="rollBtn" class="btn btn-primary">掷骰</button>
+                    </div>
+                </div>
+
+                <div class="quick-rolls">
+                    <span class="quick-label">快速掷骰</span>
+                    <div class="dice-buttons">
+                        <button class="btn dice-btn" data-dice="1d4">d4</button>
+                        <button class="btn dice-btn" data-dice="1d6">d6</button>
+                        <button class="btn dice-btn" data-dice="1d8">d8</button>
+                        <button class="btn dice-btn" data-dice="1d10">d10</button>
+                        <button class="btn dice-btn" data-dice="1d12">d12</button>
+                        <button class="btn dice-btn" data-dice="1d20">d20</button>
+                        <button class="btn dice-btn" data-dice="1d100">d100</button>
+                    </div>
+                    <div class="dice-buttons">
+                        <button class="btn dice-btn" data-dice="2d6">2d6</button>
+                        <button class="btn dice-btn" data-dice="3d6">3d6</button>
+                        <button class="btn dice-btn" data-dice="2d10">2d10</button>
+                        <button class="btn dice-btn" data-dice="2d20">2d20</button>
+                        <button class="btn dice-btn adv-btn" data-dice="1d20" data-advantage="advantage">优势</button>
+                        <button class="btn dice-btn dis-btn" data-dice="1d20" data-advantage="disadvantage">劣势</button>
+                    </div>
+                </div>
+
+                <div class="result-area" id="resultArea">
+                    <div class="dice-animation" id="diceAnimation">
+                        <div class="dice-face" id="diceFace">?</div>
+                    </div>
+                    <div class="result-detail" id="resultDetail">
+                        <div class="result-total">
+                            <span class="total-label">结果</span>
+                            <span class="total-value" id="totalValue">—</span>
+                        </div>
+                        <div class="result-breakdown" id="resultBreakdown"></div>
+                        <div class="result-formula" id="resultFormula"></div>
+                    </div>
+                </div>
+
+                <!-- History (moved inside left column) -->
+                <div class="history-area">
+                    <div class="history-header">
+                        <h2 class="history-title">掷骰记录</h2>
+                        <button id="clearHistoryBtn" class="btn btn-sm" title="清除记录">✕</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <p class="history-empty">暂无记录</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Anko Text Editor -->
+            <section class="anko-area">
+                <div class="anko-toolbar">
+                    <span class="anko-label">Anko Log</span>
+                    <div class="anko-actions">
+                        <button id="insertRollBtn" class="btn btn-sm" title="在光标处插入最近一次骰子结果 (Ctrl+Enter)">↩ 骰子</button>
+                        <button id="insertSepBtn" class="btn btn-sm" title="插入分隔线 (Ctrl+Shift+-)">— 分隔</button>
+                        <button id="toggleColorBtn" class="btn btn-sm" title="切换文本框黑/白底色">◐ 底色</button>
+                        <button id="exportLogBtn" class="btn btn-sm" title="导出为 txt 文件">↓ 导出</button>
+                        <button id="importLogBtn" class="btn btn-sm" title="从 txt 文件导入">↑ 导入</button>
+                        <button id="clearLogBtn" class="btn btn-sm" title="清空文本">✕ 清空</button>
+                    </div>
+                </div>
+                <textarea id="ankoText" class="anko-text" placeholder="在这里撰写安科剧情…&#10;&#10;输入骰子表达式后点击「掷骰」，再点击「插入骰子」将结果嵌入文本。&#10;文本会自动保存在浏览器中。"></textarea>
+                <div class="anko-status" id="ankoStatus"></div>
+                <input type="file" id="fileInput" class="file-input" accept=".txt,.log">
+            </section>
+        </main>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

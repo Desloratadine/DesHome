@@ -1,0 +1,72 @@
+/* ============================================
+   Base Styles - CSS Variables, Reset, Background
+   ============================================ */
+
+:root {
+    --primary-blue: #1e88e5;
+    --light-blue: #64b5f6;
+    --pale-blue: #90caf9;
+    --sky-blue: #b0e2ff;
+    --bg-blue: #e3f2fd;
+    --dark-blue: #1976d2;
+    --darker-blue: #0d47a1;
+    --text-blue: #42a5f5;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "VT323", monospace, "Microsoft YaHei";
+    color: var(--darker-blue);
+    padding: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Dot Background Pattern */
+.dot-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #e6f2ff, #ffffff);
+    z-index: -1;
+    overflow: hidden;
+}
+
+.dots {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background-image: radial-gradient(#87ceeb 2px, transparent 2px);
+    background-size: 50px 50px;
+    animation: scroll 20s linear infinite;
+}
+
+.dots:nth-child(2) {
+    background-image: radial-gradient(var(--sky-blue) 1.5px, transparent 1.5px);
+    background-size: 80px 80px;
+    animation-duration: 30s;
+    animation-direction: reverse;
+}
+
+.dots:nth-child(3) {
+    background-image: radial-gradient(#e3f2fd 1px, transparent 1px);
+    background-size: 120px 120px;
+    animation-duration: 40s;
+}
+
+@keyframes scroll {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-25%, -25%); }
+}

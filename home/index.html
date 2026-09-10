@@ -51,155 +51,180 @@
         </div>
     </header>
 
-    <!-- Interactive Tools -->
-    <section class="tools" aria-label="互动工具">
-        <!-- Fortune / Qian Drawing -->
-        <article class="card">
-            <h2 class="card-title">(｡•̀ᴗ-)✧ 每日求签</h2>
-            <p class="card-description">测一测今日的好运签文吧 (๑˃̵ᴗ˂̵)و</p>
-            <div class="fortune-center">
-                <div id="qianTong" class="fortune-trigger">点击抽签</div>
-                <p id="qianTip" class="fortune-tip">每日限抽1次哦~</p>
-            </div>
-            <div id="qianResult" class="fortune-result">
-                <p class="fortune-result-title">【今日签文】</p>
-                <p id="qianContent" class="fortune-content"></p>
-                <p id="qianExplain" class="fortune-explain"></p>
-            </div>
-        </article>
+    <!-- Tab Navigation -->
+    <nav class="tab-nav" aria-label="内容页签">
+        <button class="tab-btn active" data-tab="tools" aria-label="互动工具">(｡•̀ᴗ-)✧ 互动</button>
+        <button class="tab-btn" data-tab="translate" aria-label="在线翻译">( ´･ᴗ･` ) 翻译</button>
+        <button class="tab-btn" data-tab="bookmarks" aria-label="书签收藏">(๑ゝω╹๑) 书签</button>
+        <button class="tab-btn" data-tab="plumsite" aria-label="PlumSite">(ღ'ᴗ'ღ) PlumSite</button>
+    </nav>
 
-        <!-- Coin Toss -->
-        <article class="card">
-            <h2 class="card-title">(✧ω✧) 抛硬币</h2>
-            <p class="card-description">不确定选什么？让硬币帮你决定吧！</p>
-            <div class="coin-center">
-                <div id="coin" class="coin-display">😶‍🌫️</div>
-                <button id="tossBtn" class="toss-button">点击抛硬币</button>
-            </div>
-            <div id="coinResult" class="coin-result">
-                结果：<span id="resultText"></span>
-            </div>
-        </article>
-    </section>
+    <!-- Tab Slider -->
+    <div class="tab-slider">
+        <div class="tab-slider-track" id="tabSliderTrack">
 
-    <!-- Main Content -->
-    <div class="main-content">
+            <!-- Tab Panel: 互动工具 -->
+            <section class="tab-panel active" id="tab-tools" aria-label="互动工具">
+                <div class="tools">
+                    <!-- Fortune / Qian Drawing -->
+                    <article class="card">
+                        <h2 class="card-title">(｡•̀ᴗ-)✧ 每日求签</h2>
+                        <p class="card-description">测一测今日的好运签文吧 (๑˃̵ᴗ˂̵)و</p>
+                        <div class="fortune-center">
+                            <div id="qianTong" class="fortune-trigger">点击抽签</div>
+                            <p id="qianTip" class="fortune-tip">每日限抽1次哦~</p>
+                        </div>
+                        <div id="qianResult" class="fortune-result">
+                            <p class="fortune-result-title">【今日签文】</p>
+                            <p id="qianContent" class="fortune-content"></p>
+                            <p id="qianExplain" class="fortune-explain"></p>
+                        </div>
+                    </article>
 
-        <!-- Translation Section -->
-        <section class="translation-section" aria-label="在线翻译">
-            <h2 class="card-title">( ´･ᴗ･` ) 在线翻译工具 <span class="text-emoji">～(￣▽￣～)</span></h2>
-            <p class="card-description">中英文即时翻译，超实用的说 (≧∇≦)/</p>
-            <a href="https://cn.bing.com/translator?ref=TThis&text=&from=zh-Hans&to=en" target="_blank" rel="noopener" class="link-external">打开翻译工具 (≧∇≦)</a>
-            <div class="iframe-container">
-                <iframe src="https://cn.bing.com/translator?ref=TThis&text=&from=zh-Hans&to=en" sandbox="allow-scripts allow-same-origin" title="Bing 在线翻译"></iframe>
-            </div>
-        </section>
-
-        <!-- Bookmarks Wrapper -->
-        <div class="bookmarks-wrapper" aria-label="书签收藏">
-
-            <!-- Bookmark Search -->
-            <div class="bookmarks-search-container">
-                <input type="text" class="bookmarks-search-input" id="bookmarksSearch" placeholder="搜索书签..." oninput="filterBookmarks()" aria-label="搜索书签">
-            </div>
-
-            <!-- Category: AI Links -->
-            <section class="bookmark-category" data-category="ai" aria-label="AI链接">
-                <h2 class="category-title">AI链接</h2>
-                <div class="category-grid">
-                    <article class="card" data-category="ai">
-                        <h2 class="card-title">ᔦ ° ꒳ ° ᔨ ̖́- ai导航</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="https://www.iiice.cn/ai" target="_blank" rel="noopener" class="link-external">下次一定(＾▽＾)</a>
+                    <!-- Coin Toss -->
+                    <article class="card">
+                        <h2 class="card-title">(✧ω✧) 抛硬币</h2>
+                        <p class="card-description">不确定选什么？让硬币帮你决定吧！</p>
+                        <div class="coin-center">
+                            <div id="coin" class="coin-display">😶‍🌫️</div>
+                            <button id="tossBtn" class="toss-button">点击抛硬币</button>
+                        </div>
+                        <div id="coinResult" class="coin-result">
+                            结果：<span id="resultText"></span>
+                        </div>
                     </article>
                 </div>
             </section>
 
-            <!-- Category: Website Links -->
-            <section class="bookmark-category" data-category="web" aria-label="网址链接">
-                <h2 class="category-title">网址链接</h2>
-                <div class="category-grid">
-                    <article class="card" data-category="web">
-                        <h2 class="card-title">(๑ゝω╹๑) 选课网站</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="https://bkjwtest.guet.edu.cn/student/ldap/login" target="_blank" rel="noopener" class="link-external">选课登录(＾▽＾)</a>
-                    </article>
+            <!-- Tab Panel: 翻译 -->
+            <section class="tab-panel" id="tab-translate" aria-label="在线翻译">
+                <div class="translation-section">
+                    <h2 class="card-title">( ´･ᴗ･` ) 在线翻译工具 <span class="text-emoji">～(￣▽￣～)</span></h2>
+                    <p class="card-description">中英文即时翻译，超实用的说 (≧∇≦)/</p>
+                    <a href="https://cn.bing.com/translator?ref=TThis&text=&from=zh-Hans&to=en" target="_blank" rel="noopener" class="link-external">打开翻译工具 (≧∇≦)</a>
+                    <div class="iframe-container">
+                        <iframe src="https://cn.bing.com/translator?ref=TThis&text=&from=zh-Hans&to=en" sandbox="allow-scripts allow-same-origin" title="Bing 在线翻译"></iframe>
+                    </div>
+                </div>
+            </section>
 
-                    <article class="card" data-category="web">
-                        <h2 class="card-title">(゜-゜)つロ 哔哩哔哩</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="https://www.bilibili.com/" target="_blank" rel="noopener" class="link-external">哔哩哔哩(＾▽＾)</a>
-                    </article>
+            <!-- Tab Panel: 书签收藏 -->
+            <section class="tab-panel" id="tab-bookmarks" aria-label="书签收藏">
+                <div class="bookmarks-wrapper">
+                    <!-- Bookmark Search -->
+                    <div class="bookmarks-search-container">
+                        <input type="text" class="bookmarks-search-input" id="bookmarksSearch" placeholder="搜索书签..." oninput="filterBookmarks()" aria-label="搜索书签">
+                    </div>
 
-                    <article class="card" data-category="web">
-                        <h2 class="card-title">«(*´ ꒳ `*)» 网易云音乐</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="https://music.163.com/#/discover" target="_blank" rel="noopener" class="link-external">听歌(＾▽＾)</a>
-                    </article>
+                    <!-- Category: AI Links -->
+                    <section class="bookmark-category" data-category="ai" aria-label="AI链接">
+                        <h2 class="category-title">AI链接</h2>
+                        <div class="category-grid">
+                            <article class="card" data-category="ai">
+                                <h2 class="card-title">ᔦ ° ꒳ ° ᔨ ̖́- ai导航</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="https://www.iiice.cn/ai" target="_blank" rel="noopener" class="link-external">下次一定(＾▽＾)</a>
+                            </article>
+                        </div>
+                    </section>
 
-                    <article class="card" data-category="web">
-                        <h2 class="card-title">«(*´ ꒳ `*)»世界博物馆</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="https://gallerix.asia/album/Vatican#google_vignette" target="_blank" rel="noopener" class="link-external">参观~(＾▽＾)</a>
-                    </article>
+                    <!-- Category: Website Links -->
+                    <section class="bookmark-category" data-category="web" aria-label="网址链接">
+                        <h2 class="category-title">网址链接</h2>
+                        <div class="category-grid">
+                            <article class="card" data-category="web">
+                                <h2 class="card-title">(๑ゝω╹๑) 选课网站</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="https://bkjwtest.guet.edu.cn/student/ldap/login" target="_blank" rel="noopener" class="link-external">选课登录(＾▽＾)</a>
+                            </article>
 
-                    <article class="card" data-category="web">
-                        <h2 class="card-title">«(*´ ꒳ `*)»小红书</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="https://www.xiaohongshu.com/explore?channel_id=homefeed_recommend" target="_blank" rel="noopener" class="link-external">redbook~(＾▽＾)</a>
-                    </article>
+                            <article class="card" data-category="web">
+                                <h2 class="card-title">(゜-゜)つロ 哔哩哔哩</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="https://www.bilibili.com/" target="_blank" rel="noopener" class="link-external">哔哩哔哩(＾▽＾)</a>
+                            </article>
 
-                    <article class="card" data-category="web">
-                        <h2 class="card-title">«(*´ ꒳ `*)»慕课</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="https://www.icourse163.org/" target="_blank" rel="noopener" class="link-external">刷网课~(＾▽＾)</a>
+                            <article class="card" data-category="web">
+                                <h2 class="card-title">«(*´ ꒳ `*)» 网易云音乐</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="https://music.163.com/#/discover" target="_blank" rel="noopener" class="link-external">听歌(＾▽＾)</a>
+                            </article>
+
+                            <article class="card" data-category="web">
+                                <h2 class="card-title">«(*´ ꒳ `*)»世界博物馆</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="https://gallerix.asia/album/Vatican#google_vignette" target="_blank" rel="noopener" class="link-external">参观~(＾▽＾)</a>
+                            </article>
+
+                            <article class="card" data-category="web">
+                                <h2 class="card-title">«(*´ ꒳ `*)»小红书</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="https://www.xiaohongshu.com/explore?channel_id=homefeed_recommend" target="_blank" rel="noopener" class="link-external">redbook~(＾▽＾)</a>
+                            </article>
+
+                            <article class="card" data-category="web">
+                                <h2 class="card-title">«(*´ ꒳ `*)»慕课</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="https://www.icourse163.org/" target="_blank" rel="noopener" class="link-external">刷网课~(＾▽＾)</a>
+                            </article>
+                        </div>
+                    </section>
+
+                    <!-- Category: Self-made Tools & Games -->
+                    <section class="bookmark-category" data-category="selfmade" aria-label="自制工具和游戏原型">
+                        <h2 class="category-title">自制工具 &amp; 游戏原型</h2>
+                        <div class="category-grid">
+                            <article class="card" data-category="selfmade">
+                                <h2 class="card-title">塔罗占卜</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="../tarot/tarot.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
+                            </article>
+
+                            <article class="card" data-category="selfmade">
+                                <h2 class="card-title">骰子</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="../dice/index.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
+                            </article>
+
+                            <article class="card" data-category="selfmade">
+                                <h2 class="card-title">花朵采集小游戏</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="../FlowerPicker/FlowerPicker.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
+                            </article>
+
+                            <article class="card" data-category="selfmade">
+                                <h2 class="card-title">弹球小游戏</h2>
+                                <p class="card-description">---- (≧∇≦)</p>
+                                <a href="../wish_pool/index.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
+                            </article>
+                        </div>
+                    </section>
+
+                    <!-- Decorative Card -->
+                    <article class="card decorative-card">
+                        <span class="text-emoji deco-emoji">
+                            ･*  ∧_∧   ∧_∧･*･<br>
+                            '.　(｡･ω･)(･ω･｡)　'<br>
+                            '･|　つ♥と　|･'<br>
+                            '･｡°｡･ﾟ'*
+                        </span>
+                        <p class="deco-text">什么都没有…………</p>
                     </article>
                 </div>
             </section>
 
-            <!-- Category: Self-made Tools & Games -->
-            <section class="bookmark-category" data-category="selfmade" aria-label="自制工具和游戏原型">
-                <h2 class="category-title">自制工具 &amp; 游戏原型</h2>
-                <div class="category-grid">
-                    <article class="card" data-category="selfmade">
-                        <h2 class="card-title">塔罗占卜</h2>
+            <!-- Tab Panel: PlumSite -->
+            <section class="tab-panel" id="tab-plumsite" aria-label="PlumSite">
+                <div class="plumsite-section">
+                    <article class="card">
+                        <h2 class="card-title">(ღ'ᴗ'ღ) PlumSite</h2>
                         <p class="card-description">---- (≧∇≦)</p>
-                        <a href="../tarot/tarot.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
-                    </article>
-
-                    <article class="card" data-category="selfmade">
-                        <h2 class="card-title">骰子</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="../dice/index.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
-                    </article>
-
-                    <article class="card" data-category="selfmade">
-                        <h2 class="card-title">花朵采集小游戏</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="../FlowerPicker/FlowerPicker.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
-                    </article>
-
-                    <article class="card" data-category="selfmade">
-                        <h2 class="card-title">弹球小游戏</h2>
-                        <p class="card-description">---- (≧∇≦)</p>
-                        <a href="../wish_pool/index.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
+                        <a href="../site_plum/index.html" target="_blank" rel="noopener" class="link-external">~(＾▽＾)</a>
                     </article>
                 </div>
             </section>
-
-            <!-- Decorative Card -->
-            <article class="card decorative-card">
-                <span class="text-emoji deco-emoji">
-                    ･*  ∧_∧   ∧_∧･*･<br>
-                    '.　(｡･ω･)(･ω･｡)　'<br>
-                    '･|　つ♥と　|･'<br>
-                    '･｡°｡･ﾟ'*
-                </span>
-                <p class="deco-text">什么都没有…………</p>
-            </article>
 
         </div>
-
     </div>
 
     <!-- Scripts - Loaded in order of dependencies -->
@@ -208,6 +233,7 @@
     <script src="js/bookmark-search.js"></script>
     <script src="js/fortune.js"></script>
     <script src="js/coin-toss.js"></script>
+    <script src="js/tab-slider.js"></script>
 
 </body>
 </html>

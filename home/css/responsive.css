@@ -4,21 +4,14 @@
 
 /* Tablet and up */
 @media (min-width: 768px) {
-    .main-content {
-        flex-direction: row;
-    }
-
-    .translation-section {
-        flex: 1;
-    }
-
-    .bookmarks-wrapper {
-        flex: 1;
-    }
-
     /* 3 columns for AI and web categories */
     .category-grid {
         grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .tab-btn {
+        font-size: 1em;
+        padding: 12px 20px;
     }
 }
 
@@ -29,9 +22,9 @@
     }
 }
 
-/* Extra small: stack tools */
+/* Extra small: stack tools inside tab panel */
 @media (max-width: 575px) {
-    .tools {
+    .tab-panel > .tools {
         flex-direction: column;
         align-items: stretch;
     }
@@ -43,11 +36,11 @@
     .iframe-container iframe {
         height: 400px;
     }
+
+    .tab-btn {
+        font-size: 0.85em;
+        padding: 8px 10px;
+        min-width: 60px;
+    }
 }
 
-/* Mobile-first base layout */
-.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}

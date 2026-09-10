@@ -385,3 +385,83 @@ header {
 .decorative-card {
     text-align: center;
 }
+
+/* === Tab Navigation === */
+.tab-nav {
+    display: flex;
+    gap: 6px;
+    margin: 15px 0;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid var(--pale-blue);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--sky-blue);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tab-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-btn {
+    flex: 1;
+    min-width: 80px;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: var(--text-blue);
+    font-family: inherit;
+    font-size: 0.95em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border-radius: 6px;
+    white-space: nowrap;
+    position: relative;
+}
+
+.tab-btn:hover {
+    background: rgba(144, 202, 249, 0.2);
+    color: var(--dark-blue);
+}
+
+.tab-btn.active {
+    background: var(--pale-blue);
+    color: white;
+    box-shadow: 0 2px 6px rgba(100, 181, 246, 0.4);
+}
+
+/* === Tab Slider === */
+.tab-slider {
+    overflow: hidden;
+    position: relative;
+    border-radius: 6px;
+}
+
+.tab-slider-track {
+    display: flex;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.tab-panel {
+    min-width: 100%;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 4px 0;
+}
+
+/* Panel inner content */
+.tab-panel > .tools {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* Hide non-active panels visually (only for no-js fallback) */
+.tab-panel:not(.active) {
+    /* visibility is handled by the slider transform */
+}

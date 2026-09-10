@@ -1,0 +1,91 @@
+:root {
+  --bg: #f7f5f0;
+  --ink: #2c2a26;
+  --muted: #7a746a;
+  --line: #ddd7cb;
+  --accent: #6b7f6e;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 18px; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Georgia, "Songti SC", "Noto Serif SC", "SimSun", serif;
+  line-height: 1.9;
+}
+
+.wrap {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+header.site {
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 2.5rem;
+  padding-bottom: 1rem;
+}
+
+header.site .name {
+  font-size: 1.5rem;
+  letter-spacing: 0.15em;
+  margin: 0 0 0.6rem;
+}
+
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  margin-right: 1.2rem;
+  font-size: 0.95rem;
+}
+
+nav a:hover { color: var(--accent); }
+
+h2 {
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  margin-top: 2.5rem;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.7rem;
+}
+
+p { margin: 0.8rem 0; }
+
+.entry {
+  border-bottom: 1px dashed var(--line);
+  padding: 1rem 0;
+}
+
+.entry h3 {
+  font-size: 1rem;
+  margin: 0 0 0.3rem;
+}
+
+.entry .meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+blockquote {
+  margin: 1.2rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+}
+
+footer.site {
+  margin-top: 4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  html { font-size: 16px; }
+  .wrap { padding: 2rem 1.1rem 3.5rem; }
+}

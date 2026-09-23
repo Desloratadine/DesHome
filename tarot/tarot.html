@@ -45,7 +45,10 @@
                             aria-label="抽取牌数"
                             >
                         </div>
-
+                        <label class="prompt-toggle major-toggle" title="勾选后，仅从大阿卡纳（22张）中抽取">
+                            <input type="checkbox" id="majorOnlyToggle">
+                            <span>仅大阿卡纳</span>
+                        </label>
                         <div class="field-group">
                             <label class="field-label" for="questionInput">占卜问题</label>
                             <input
@@ -58,6 +61,7 @@
                             >
                         </div>
 
+
                         <button
                         type="button"
                         id="drawBtn"
@@ -68,11 +72,13 @@
                         [ 抽 取 ]
                         </button>
 
+<label class="field-label" for="countInput">导出</label>
+
                         <button
                         type="button"
                         id="exportBtn"
                         class="btn btn-export"
-                        title="导出占卜记录为TXT文件"
+                        title="导出为TXT文件"
                         aria-label="导出记录"
                         >
                         > 导出为TXT
@@ -194,7 +200,17 @@
                         <h2>功能介绍</h2>
                         <div class="help-item">
                             <h3>抽卡页</h3>
-                            <p>在此页面进行塔罗牌占卜。你可以选择抽取 1-10 张卡牌，并输入你想问的问题。每张卡牌都可以添加笔记。</p>
+                            <p>选择抽取牌数，并输入你想问的问题，点击「抽卡」按钮即可获取占卜结果。每张卡牌都可以添加笔记。</p>
+                            <p>每次抽卡会使用 Fisher-Yates 洗牌算法对完整 78 张牌组进行均匀随机打乱，
+                                正逆位的判定通过选取一段连续的区间（约占牌组两到四成）作为「逆位段」，更贴近真实翻转牌堆的效果。</p>
+                        </div>
+                        <div class="help-item">
+                            <h3>卡牌总览</h3>
+                            <p>查看全部 78 张塔罗牌，包括大阿卡纳和小阿卡纳。点击任意卡牌可以查看详细信息并编辑笔记。</p>
+                        </div>
+                        <div class="help-item">
+                            <h3>笔记管理</h3>
+                            <p>查看和管理你为所有卡牌添加的笔记。支持导出笔记到本地文件备份，或从文件导入笔记。</p>
                         </div>
                         <div class="help-item">
                             <h3>卡牌总览</h3>

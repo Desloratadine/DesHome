@@ -230,9 +230,10 @@ function handleDraw() {
     }
 
     const question = questionInput.value.trim();
-    const cards = drawCards(count);
+    const majorOnly = document.getElementById('majorOnlyToggle').checked;
+    const cards = drawCards(count, { majorOnly });
     const timestamp = getTimestamp();
-    currentDrawResult = { cards, question, count, timestamp };
+    currentDrawResult = { cards, question, count, timestamp, majorOnly };
 
     renderResults(cards, question, count, timestamp);
 }

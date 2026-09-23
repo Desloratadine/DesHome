@@ -42,6 +42,21 @@ function renderResults(cards, question, drawCount, timestamp) {
             cardItem.classList.add('reversed');
         }
 
+        // 左侧：牌图
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'card-image-wrap';
+
+        const img = document.createElement('img');
+        img.className = 'card-image';
+        img.src = card.image;
+        img.alt = card.name + (card.isReversed ? ' (逆位)' : ' (正位)');
+        img.loading = 'lazy';
+        imgWrap.appendChild(img);
+
+        // 右侧：文本与信息
+        const infoWrap = document.createElement('div');
+        infoWrap.className = 'card-info-wrap';
+
         // 头部行：序号 + 位置
         const headerRow = document.createElement('div');
         headerRow.className = 'card-header-row';
@@ -61,21 +76,13 @@ function renderResults(cards, question, drawCount, timestamp) {
 
         headerRow.appendChild(numberSpan);
         headerRow.appendChild(positionSpan);
-        cardItem.appendChild(headerRow);
+        infoWrap.appendChild(headerRow);
 
         // 牌名
         const nameDiv = document.createElement('div');
         nameDiv.className = 'card-name';
         nameDiv.textContent = card.name;
-        cardItem.appendChild(nameDiv);
-
-        // 牌图
-        const img = document.createElement('img');
-        img.className = 'card-image';
-        img.src = card.image;
-        img.alt = card.name + (card.isReversed ? ' (逆位)' : ' (正位)');
-        img.loading = 'lazy';
-        cardItem.appendChild(img);
+        infoWrap.appendChild(nameDiv);
 
         // 详细信息
         const detailsDiv = document.createElement('div');
@@ -125,7 +132,7 @@ function renderResults(cards, question, drawCount, timestamp) {
             detailsDiv.appendChild(courtItem);
         }
 
-        cardItem.appendChild(detailsDiv);
+        infoWrap.appendChild(detailsDiv);
 
         // 笔记区域
         const noteDiv = document.createElement('div');
@@ -161,7 +168,11 @@ function renderResults(cards, question, drawCount, timestamp) {
         }
         
         noteDiv.appendChild(noteContent);
-        cardItem.appendChild(noteDiv);
+        infoWrap.appendChild(noteDiv);
+
+        // 组合左右两侧
+        cardItem.appendChild(imgWrap);
+        cardItem.appendChild(infoWrap);
 
         resultsContainer.appendChild(cardItem);
 

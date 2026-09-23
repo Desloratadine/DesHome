@@ -377,13 +377,17 @@ header {
 
 .card-item {
     width: 100%;
-    max-width: 380px;
+    max-width: 560px;
     border: 2px solid var(--black);
     padding: 16px 18px;
     background: var(--white);
     position: relative;
     box-shadow: 3px 3px 0 var(--black);
     transition: box-shadow 0.1s, transform 0.1s;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .card-item:hover {
@@ -395,10 +399,33 @@ header {
     border-style: dashed;
 }
 
+.card-item.reversed .card-image-wrap .card-image {
+    transform: rotate(180deg);
+}
+
 .card-item.reversed .card-name {
     text-decoration: line-through;
     text-decoration-thickness: 1px;
     text-underline-offset: 6px;
+}
+
+.card-image-wrap {
+    flex: 0 0 auto;
+    width: 150px;
+}
+
+.card-image-wrap .card-image {
+    width: 100%;
+    border: 2px solid var(--black);
+    box-shadow: 2px 2px 0 var(--black);
+    display: block;
+}
+
+.card-info-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-header-row {
@@ -406,7 +433,6 @@ header {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 8px;
-    flex-wrap: wrap;
     gap: 6px;
 }
 
@@ -888,32 +914,35 @@ header {
 /* 卡牌详情模态框内容 */
 .card-detail-content {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
 }
 
 .card-detail-image {
-    width: 100%;
-    max-width: 300px;
+    width: 220px;
+    flex-shrink: 0;
     border: 3px solid var(--black);
     box-shadow: 3px 3px 0 var(--black);
 }
 
 .card-detail-info {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-detail-name {
     font-size: 1.4rem;
     font-weight: bold;
-    text-align: center;
+    text-align: left;
     margin-bottom: 12px;
 }
 
 .card-detail-tags {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 8px;
     flex-wrap: wrap;
     margin-bottom: 16px;
@@ -929,6 +958,7 @@ header {
 
 .card-detail-note-section {
     width: 100%;
+    flex: 1;
     padding-top: 16px;
     border-top: 2px dotted var(--black);
 }
@@ -1005,6 +1035,39 @@ header {
     .card-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 12px;
+    }
+
+    /* 卡牌详情：窄屏恢复纵向布局 */
+    .card-detail-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card-detail-image {
+        width: 100%;
+        max-width: 220px;
+    }
+
+    .card-detail-name,
+    .card-detail-tags {
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* 抽卡结果卡片：窄屏恢复纵向布局 */
+    .card-item {
+        flex-direction: column;
+        align-items: center;
+        max-width: 380px;
+    }
+
+    .card-image-wrap {
+        width: 60%;
+        max-width: 200px;
+    }
+
+    .card-info-wrap {
+        width: 100%;
     }
 }
 

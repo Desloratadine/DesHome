@@ -759,6 +759,11 @@ header {
     padding: 20px;
 }
 
+/* 笔记编辑模态框置顶，避免被卡牌详情模态框遮挡 */
+#noteModalOverlay {
+    z-index: 1200;
+}
+
 .modal-container {
     background: var(--white);
     border: 3px solid var(--black);
@@ -1022,6 +1027,75 @@ header {
     .btn-notes {
         width: 100%;
     }
+}
+
+/* 提示词设置页 */
+.prompt-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.prompt-header {
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 2px dotted var(--black);
+}
+
+.prompt-desc {
+    font-size: 0.9rem;
+    margin-top: 8px;
+    color: var(--black);
+    opacity: 0.85;
+}
+
+.prompt-textarea {
+    width: 100%;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    border: 2px solid var(--black);
+    background: var(--white);
+    color: var(--black);
+    resize: vertical;
+}
+
+.prompt-textarea:focus {
+    outline: none;
+    box-shadow: 4px 4px 0 var(--black);
+}
+
+.prompt-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.prompt-hint {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* 附带提示词开关 */
+.prompt-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    user-select: none;
+}
+
+.prompt-toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--black);
 }
 
 /* 打印样式 */

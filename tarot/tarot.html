@@ -21,6 +21,7 @@
             <button class="nav-btn active" data-view="draw">抽 卡</button>
             <button class="nav-btn" data-view="overview">卡牌总览</button>
             <button class="nav-btn" data-view="notes">笔记管理</button>
+            <button class="nav-btn" data-view="prompt">提示词</button>
             <button class="nav-btn" data-view="help">帮 助</button>
         </nav>
 
@@ -74,8 +75,23 @@
                         title="导出占卜记录为TXT文件"
                         aria-label="导出记录"
                         >
-                        > 导出记录 TXT
+                        > 导出为TXT
                         </button>
+
+                        <button
+                        type="button"
+                        id="copyResultBtn"
+                        class="btn btn-export"
+                        title="一键复制本次占卜结果到剪贴板"
+                        aria-label="复制占卜结果"
+                        >
+                        > 复制到剪贴板
+                        </button>
+
+                        <label class="prompt-toggle" title="勾选后，导出/复制的文本会在结果前附带 AI 提示词">
+                            <input type="checkbox" id="includePromptToggle">
+                            <span>附带提示词</span>
+                        </label>
                     </aside>
 
                     <section class="right-panel" id="rightPanel" aria-label="抽牌结果">
@@ -141,13 +157,41 @@
                 </div>
             </section>
 
+            <!-- 提示词设置页 -->
+            <section id="view-prompt" class="view">
+                <div class="prompt-container">
+                    <div class="prompt-header">
+                        <h2>AI 提示词设置</h2>
+                    </div>
+                    <div class="notes-actions">
+                        <button type="button" id="promptResetBtn" class="btn btn-notes" title="恢复为默认提示词">
+                            ↺ 重置
+                        </button>
+                        <button type="button" id="promptSaveBtn" class="btn btn-notes" title="保存提示词">
+                            ✓ 保存
+                        </button>
+                        <button type="button" id="promptInsertBtn" class="btn btn-notes" title="在提示词末尾插入占位标记 {{RESULTS}}，表示占卜结果的插入位置">
+                            ⊕ 插入结果占位符
+                        </button>                        
+                    </div>
+                    <div class="field-group">
+                        
+                        <textarea id="aiPromptTextarea" class="prompt-textarea" rows="18" placeholder="在此输入默认提示词，它会在开启「附带提示词」时出现在占卜结果前面..."></textarea>
+                    </div>
+                    <div class="prompt-actions">
+
+                        <span class="prompt-hint">{{RESULTS}} 会替换为占卜结果。若不使用占位符，结果默认追加在提示词末尾。</span>
+                    </div>
+                </div>
+            </section>
+
             <!-- 帮助页 -->
             <section id="view-help" class="view">
                 <div class="help-container">
                     <h1>欢迎使用塔罗牌占卜！</h1>
 
                     <div class="help-section">
-                        <h2>📜 功能介绍</h2>
+                        <h2>功能介绍</h2>
                         <div class="help-item">
                             <h3>抽卡页</h3>
                             <p>在此页面进行塔罗牌占卜。你可以选择抽取 1-10 张卡牌，并输入你想问的问题。每张卡牌都可以添加笔记。</p>
@@ -160,10 +204,14 @@
                             <h3>笔记管理</h3>
                             <p>查看和管理你为所有卡牌添加的笔记。支持导出笔记到本地文件备份，或从文件导入笔记。</p>
                         </div>
+                        <div class="help-item">
+                            <h3>提示词</h3>
+                            <p>编辑复制/导出占卜结果时附带的ai提示词。抽卡页签勾选「附带提示词」后，提示词会被添加到占卜结果之前，供 AI 解读使用。</p>
+                        </div>
                     </div>
 
                     <div class="help-section">
-                        <h2>🎴 卡牌体系</h2>
+                        <h2>卡牌体系</h2>
                         <p>本应用包含完整的韦特塔罗体系：</p>
                         <ul>
                             <li><strong>大阿卡纳</strong> - 22 张，代表人生的重大主题</li>
@@ -179,12 +227,12 @@
                     </div>
 
                     <div class="help-section">
-                        <h2>💾 数据存储</h2>
+                        <h2>数据存储</h2>
                         <p>笔记保存在浏览器的 LocalStorage 中，刷新页面不会丢失。建议定期使用「笔记管理」功能导出备份。</p>
                     </div>
 
                     <div class="help-section">
-                        <h2>🔧 技术说明</h2>
+                        <h2>技术说明</h2>
                         <p>本应用为纯静态网页，无需后端支持，完全在本地运行。</p>
                     </div>
                 </div>
@@ -229,6 +277,7 @@
     <script src="data.js"></script>
     <script src="utils.js"></script>
     <script src="notes.js"></script>
+    <script src="prompt.js"></script>
     <script src="renderer.js"></script>
     <script src="app.js"></script>
 </body>

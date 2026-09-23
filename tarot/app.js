@@ -30,11 +30,19 @@ const importNotesFile = document.getElementById('importNotesFile');
 const syncNotesBtn = document.getElementById('syncNotesBtn');
 const syncNotesFile = document.getElementById('syncNotesFile');
 
+// 提示词设置元素
+const includePromptToggle = document.getElementById('includePromptToggle');
+const aiPromptTextarea = document.getElementById('aiPromptTextarea');
+const promptSaveBtn = document.getElementById('promptSaveBtn');
+const promptResetBtn = document.getElementById('promptResetBtn');
+const promptInsertBtn = document.getElementById('promptInsertBtn');
+
 // 状态
 let currentDrawResult = null;
 let currentEditingCardId = null;
 let overviewInitialized = false;
 let notesInitialized = false;
+let promptInitialized = false;
 
 /**
  * 初始化
@@ -43,6 +51,7 @@ function init() {
     // 抽卡按钮
     drawBtn.addEventListener('click', handleDraw);
     exportBtn.addEventListener('click', handleExport);
+    document.getElementById('copyResultBtn').addEventListener('click', handleCopyResult);
 
     // 笔记模态框
     noteModalSave.addEventListener('click', handleSaveNote);
@@ -100,6 +109,17 @@ function init() {
                 });
         }
         syncNotesFile.value = '';
+    });
+
+    // 提示词设置
+    includePromptToggle.checked = getIncludePrompt();
+    includePromptToggle.addEventListener('change', function() {
+        setIncludePrompt(this.checked);
+    });
+    promptSaveBtn.addEventListener('click', handleSavePrompt);
+    promptResetBtn.addEventListener('click', handleResetPrompt);
+    promptInsertBtn.addEventListener('click', function() {
+        insertPromptPlaceholder();
     });
 
     // 事件委托：笔记编辑按钮
@@ -188,6 +208,10 @@ function switchView(viewName) {
     } else if (viewName === 'notes' && !notesInitialized) {
         renderNotesList();
         notesInitialized = true;
+    } else if (viewName === 'prompt') {
+        // 每次进入提示词页都同步最新内容
+        aiPromptTextarea.value = loadPromptText();
+        includePromptToggle.checked = getIncludePrompt();
     }
 }
 
@@ -214,17 +238,14 @@ function handleDraw() {
 }
 
 /**
- * 导出逻辑
+ * 构建占卜结果文本
  */
-function handleExport() {
-    if (!currentDrawResult) {
-        alert('请先抽取卡牌，才能导出结果。');
-        return;
-    }
+function buildResultText() {
+    if (!currentDrawResult) return '';
 
     const { cards, question, count, timestamp } = currentDrawResult;
     let text = '';
-    text += 'Tarot Reading\n';
+    text += '占卜记录\n';
     text += '============\n';
     text += `时间: ${timestamp}\n`;
     text += `问题: ${question || '(无)'}\n`;
@@ -248,7 +269,19 @@ function handleExport() {
         }
         text += '\n---\n';
     });
+    return text;
+}
 
+/**
+ * 导出格式
+ */
+function handleExport() {
+    if (!currentDrawResult) {
+        alert('请先抽取卡牌，才能导出结果。');
+        return;
+    }
+
+    const text = buildPromptedResult(buildResultText());
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -258,6 +291,78 @@ function handleExport() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+/**
+ * 复制占卜结果到剪贴板
+ */
+function handleCopyResult() {
+    if (!currentDrawResult) {
+        alert('请先抽取卡牌，才能复制结果。');
+        return;
+    }
+
+    const text = buildPromptedResult(buildResultText());
+    const copyBtn = document.getElementById('copyResultBtn');
+    copyBtn.textContent = '> 已复制!';
+    setTimeout(() => { copyBtn.textContent = '> 复制结果'; }, 1500);
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function() {
+            // 成功
+        }, function() {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+/**
+ * 剪贴板降级方案
+ */
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        document.execCommand('copy');
+    } catch (e) {
+        alert('复制失败，请使用导出功能。');
+    }
+    document.body.removeChild(textarea);
+}
+
+/**
+ * 保存提示词
+ */
+function handleSavePrompt() {
+    savePromptText(aiPromptTextarea.value);
+    promptSaveBtn.textContent = '✓ 已保存';
+    setTimeout(() => { promptSaveBtn.textContent = '✓ 保存提示词'; }, 1500);
+}
+
+/**
+ * 恢复默认提示词
+ */
+function handleResetPrompt() {
+    if (confirm('确定要恢复为默认提示词吗？当前内容将被覆盖。')) {
+        resetPromptText();
+        aiPromptTextarea.value = loadPromptText();
+        promptResetBtn.textContent = '✓ 已恢复默认';
+        setTimeout(() => { promptResetBtn.textContent = '↺ 恢复默认'; }, 1500);
+    }
+}
+
+/**
+ * 在提示词末尾插入占位标记 {{RESULTS}}
+ */
+function insertPromptPlaceholder() {
+    aiPromptTextarea.value += '{{RESULTS}}';
+    aiPromptTextarea.focus();
 }
 
 /**
